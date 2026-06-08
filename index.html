@@ -1,0 +1,533 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>NVS Consultoria Empresarial | Livro Caixa</title>
+
+<!--
+============================================================
+NVS CONSULTORIA EMPRESARIAL — LIVRO CAIXA MODERNO
+============================================================
+Como usar no GitHub Pages:
+1) Suba este arquivo HTML para o repositório.
+2) Suba a planilha no mesmo diretório com o nome: DRE_NVS.xlsx
+3) Suba também o arquivo de logotipo no mesmo diretório com o nome: logo_nvs.png
+4) Se quiser usar outro nome/caminho, altere a linha abaixo:
+   const EXCEL_URL = './DRE_NVS.xlsx';
+
+Aba de receitas esperada: contém "Receitas" no nome.
+Aba de despesas esperada: contém "Despesas" no nome.
+O HTML também permite carregar a planilha manualmente pelo botão.
+============================================================
+-->
+
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+
+<style>
+:root{
+  --bg:#060B16;
+  --panel:#0B1220;
+  --panel2:#101A2D;
+  --card:#0F172A;
+  --text:#F8FAFC;
+  --muted:#94A3B8;
+  --line:rgba(148,163,184,.22);
+  --navy:#071A34;
+  --blue:#2563EB;
+  --cyan:#00E5FF;
+  --lime:#39FF14;
+  --green:#22C55E;
+  --red:#FB365D;
+  --orange:#F59E0B;
+  --purple:#A855F7;
+  --silver:#CBD5E1;
+  --shadow:0 24px 70px rgba(0,0,0,.34);
+  --radius:24px;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{
+  min-height:100vh;
+  font-family:Inter,Segoe UI,Roboto,Arial,sans-serif;
+  color:var(--text);
+  background:
+    radial-gradient(circle at top left, rgba(0,229,255,.16), transparent 34%),
+    radial-gradient(circle at 80% 8%, rgba(57,255,20,.10), transparent 30%),
+    radial-gradient(circle at 55% 100%, rgba(168,85,247,.12), transparent 36%),
+    var(--bg);
+  line-height:1.45;
+}
+.wrapper{width:min(1380px,94vw);margin:0 auto;padding:28px 0 64px}
+.hero{
+  position:relative;
+  overflow:hidden;
+  border:1px solid var(--line);
+  background:linear-gradient(135deg,rgba(15,23,42,.96),rgba(2,6,23,.88));
+  border-radius:32px;
+  padding:34px;
+  box-shadow:var(--shadow);
+}
+.hero:before{
+  content:"";position:absolute;inset:-2px;
+  background:linear-gradient(120deg,rgba(0,229,255,.20),transparent 32%,rgba(57,255,20,.12),transparent 70%,rgba(168,85,247,.16));
+  pointer-events:none;
+}
+.heroContent{position:relative;display:grid;grid-template-columns:1.3fr .7fr;gap:26px;align-items:center}
+.brand{display:flex;gap:18px;align-items:center;margin-bottom:18px}
+.logoMark{
+  width:108px;height:108px;border-radius:26px;
+  display:grid;place-items:center;
+  background:linear-gradient(145deg,#ffffff,#eef2f7);
+  border:1px solid rgba(255,255,255,.35);
+  box-shadow:0 20px 48px rgba(0,0,0,.28), inset 0 1px 0 rgba(255,255,255,.75);
+  overflow:hidden;
+  padding:6px;
+}
+.logoMark img{width:100%;height:100%;object-fit:contain;display:block;border-radius:20px}
+.logoWatermark{
+  position:absolute;right:-44px;bottom:-76px;width:360px;max-width:44vw;opacity:.08;filter:grayscale(20%);pointer-events:none;
+}
+.brandText .eyebrow{font-size:12px;text-transform:uppercase;letter-spacing:.22em;color:var(--cyan);font-weight:800}
+h1{font-size:clamp(30px,5vw,58px);line-height:.98;letter-spacing:-.05em;margin:0 0 12px}
+.hero p{color:#CBD5E1;font-size:clamp(15px,1.5vw,18px);max-width:850px}
+.badges{display:flex;gap:10px;flex-wrap:wrap;margin-top:22px}
+.badge{border:1px solid var(--line);background:rgba(15,23,42,.72);padding:9px 12px;border-radius:999px;color:#DCE6F5;font-size:13px;font-weight:700}
+.heroPanel{
+  border:1px solid var(--line);
+  background:linear-gradient(180deg,rgba(255,255,255,.08),rgba(255,255,255,.03));
+  border-radius:26px;padding:22px;box-shadow:inset 0 1px 0 rgba(255,255,255,.08);
+}
+.statusTitle{color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.16em;margin-bottom:10px;font-weight:800}
+.statusValue{font-size:24px;font-weight:900;margin-bottom:6px}
+.statusSmall{color:var(--muted);font-size:13px}
+.actions{display:flex;gap:12px;flex-wrap:wrap;margin-top:18px}
+.btn,label.btn{
+  appearance:none;border:0;cursor:pointer;text-decoration:none;
+  color:#031016;font-weight:900;background:linear-gradient(135deg,var(--lime),#B7FF4A);
+  padding:12px 16px;border-radius:16px;box-shadow:0 12px 24px rgba(57,255,20,.18);
+  display:inline-flex;align-items:center;gap:8px;font-size:14px;
+}
+.btn.secondary{background:rgba(255,255,255,.08);color:#E2E8F0;border:1px solid var(--line);box-shadow:none}
+input[type=file]{display:none}
+.grid{display:grid;grid-template-columns:repeat(12,1fr);gap:16px;margin-top:18px}
+.card{
+  grid-column:span 3;
+  background:linear-gradient(180deg,rgba(15,23,42,.94),rgba(15,23,42,.72));
+  border:1px solid var(--line);border-radius:var(--radius);padding:20px;
+  box-shadow:0 16px 45px rgba(0,0,0,.20);position:relative;overflow:hidden;
+}
+.card:before{content:"";position:absolute;left:0;right:0;top:0;height:4px;background:var(--accent,var(--cyan))}
+.card .label{font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.15em;font-weight:900;margin-bottom:8px}
+.card .value{font-size:clamp(24px,3vw,36px);font-weight:950;letter-spacing:-.04em}
+.card .hint{font-size:13px;color:var(--muted);margin-top:6px}
+.card.entrada{--accent:var(--lime)}.card.saida{--accent:var(--red)}.card.saldo{--accent:var(--cyan)}.card.pendente{--accent:var(--orange)}
+.panel{
+  margin-top:18px;background:rgba(15,23,42,.78);border:1px solid var(--line);border-radius:var(--radius);padding:18px;box-shadow:var(--shadow);
+}
+.panelHeader{display:flex;justify-content:space-between;gap:16px;align-items:flex-start;flex-wrap:wrap;margin-bottom:16px}
+h2{font-size:22px;letter-spacing:-.03em}.muted{color:var(--muted);font-size:14px;margin-top:4px}
+.filters{display:grid;grid-template-columns:repeat(6,minmax(120px,1fr));gap:12px}
+.field{display:flex;flex-direction:column;gap:6px}
+.field span{font-size:11px;text-transform:uppercase;letter-spacing:.12em;color:var(--muted);font-weight:900}
+select,input[type=number],input[type=text]{
+  width:100%;background:#07111F;color:var(--text);border:1px solid var(--line);border-radius:14px;padding:12px;font-weight:700;outline:none;
+}
+select:focus,input:focus{border-color:rgba(0,229,255,.7);box-shadow:0 0 0 4px rgba(0,229,255,.08)}
+.chartWrap{height:330px;margin-top:8px}
+.twoCols{display:grid;grid-template-columns:1.05fr .95fr;gap:16px;margin-top:18px}
+.tableWrap{overflow:auto;border-radius:18px;border:1px solid var(--line);background:rgba(2,6,23,.42)}
+table{width:100%;border-collapse:separate;border-spacing:0;min-width:980px;font-size:13px}
+th,td{padding:12px 12px;border-bottom:1px solid rgba(148,163,184,.14);text-align:left;white-space:nowrap}
+th{position:sticky;top:0;background:#0B1220;color:#CBD5E1;text-transform:uppercase;letter-spacing:.10em;font-size:11px;z-index:2}
+tr:hover td{background:rgba(255,255,255,.035)}
+td.num{text-align:right;font-variant-numeric:tabular-nums;font-weight:800}
+.pill{display:inline-flex;align-items:center;gap:6px;padding:6px 9px;border-radius:999px;font-weight:900;font-size:11px;border:1px solid var(--line)}
+.pill.in{color:#B7FF4A;background:rgba(57,255,20,.08);border-color:rgba(57,255,20,.25)}
+.pill.out{color:#FFB2C0;background:rgba(251,54,93,.08);border-color:rgba(251,54,93,.25)}
+.pill.ok{color:#BBF7D0;background:rgba(34,197,94,.10);border-color:rgba(34,197,94,.25)}
+.pill.warn{color:#FED7AA;background:rgba(245,158,11,.10);border-color:rgba(245,158,11,.28)}
+.monthCard{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}
+.mini{background:rgba(2,6,23,.42);border:1px solid var(--line);border-radius:18px;padding:14px}
+.mini .k{color:var(--muted);font-size:12px;font-weight:900;text-transform:uppercase;letter-spacing:.12em}.mini .v{font-weight:950;font-size:22px;margin-top:4px}
+.notice{margin-top:12px;color:#CBD5E1;font-size:13px;border:1px dashed rgba(148,163,184,.35);padding:12px;border-radius:16px;background:rgba(255,255,255,.03)}
+.footer{margin-top:22px;color:var(--muted);font-size:12px;text-align:center}
+.empty{padding:28px;text-align:center;color:var(--muted)}
+@media(max-width:980px){
+  .hero{padding:24px}.heroContent{grid-template-columns:1fr}.grid{grid-template-columns:repeat(2,1fr)}.card{grid-column:span 1}.filters{grid-template-columns:repeat(2,1fr)}.twoCols{grid-template-columns:1fr}.chartWrap{height:300px}.wrapper{width:min(96vw,1380px)}
+}
+@media(max-width:560px){
+  .brand{align-items:flex-start}.logoMark{width:78px;height:78px;border-radius:20px}.logoMark img{border-radius:16px}.grid{grid-template-columns:1fr}.filters{grid-template-columns:1fr}.card{padding:18px}.monthCard{grid-template-columns:1fr}table{min-width:900px}.hero{border-radius:24px}.panel{padding:14px}
+}
+</style>
+</head>
+<body>
+<div class="wrapper">
+  <section class="hero">
+    <img class="logoWatermark" src="./logo_nvs.png" alt="" aria-hidden="true">
+    <div class="heroContent">
+      <div>
+        <div class="brand">
+          <div class="logoMark"><img src="./logo_nvs.png" alt="NVS Consultoria Empresarial"></div>
+          <div class="brandText">
+            <div class="eyebrow">Consultoria Empresarial</div>
+            <div style="color:#94A3B8;font-weight:700">Livro Caixa Inteligente</div>
+          </div>
+        </div>
+        <h1>Livro Caixa moderno da NVS</h1>
+        <p>Dashboard financeiro em HTML para acompanhar receitas, despesas, impostos, saldos, contas pagas e valores a pagar a partir da planilha Excel.</p>
+        <div class="badges">
+          <span class="badge">Leitura automática do Excel</span>
+          <span class="badge">Receitas pela aba “Receitas”</span>
+          <span class="badge">Despesas pela aba “Despesas”</span>
+          <span class="badge">Pronto para GitHub Pages</span>
+        </div>
+      </div>
+      <div class="heroPanel">
+        <div class="statusTitle">Status da base</div>
+        <div class="statusValue" id="loadStatus">Carregando planilha...</div>
+        <div class="statusSmall" id="loadDetail">Tentando abrir DRE_NVS.xlsx no mesmo diretório do HTML.</div>
+        <div class="actions">
+          <label class="btn" for="fileInput">📎 Carregar planilha</label>
+          <button class="btn secondary" onclick="resetFilters()">↻ Limpar filtros</button>
+          <button class="btn secondary" onclick="exportCSV()">⇩ Exportar CSV</button>
+        </div>
+        <input id="fileInput" type="file" accept=".xlsx,.xls,.xlsm" />
+        <div class="notice">No GitHub, deixe a planilha no mesmo diretório deste HTML com o nome <b>DRE_NVS.xlsx</b> e o logotipo como <b>logo_nvs.png</b>. Se mudar o nome da planilha, ajuste a variável <b>EXCEL_URL</b>.</div>
+      </div>
+    </div>
+  </section>
+
+  <section class="panel">
+    <div class="panelHeader">
+      <div>
+        <h2>Filtros do livro caixa</h2>
+        <div class="muted">Filtre por ano, mês, tipo, status e descrição/fornecedor.</div>
+      </div>
+      <div class="filters">
+        <label class="field"><span>Ano</span><select id="yearFilter"></select></label>
+        <label class="field"><span>Mês</span><select id="monthFilter"></select></label>
+        <label class="field"><span>Tipo</span><select id="typeFilter"><option value="todos">Todos</option><option value="entrada">Entradas</option><option value="saida">Saídas</option></select></label>
+        <label class="field"><span>Status</span><select id="statusFilter"><option value="todos">Todos</option><option value="PAGO">Pago</option><option value="A PAGAR">A pagar</option></select></label>
+        <label class="field"><span>Busca</span><input id="searchFilter" type="text" placeholder="Descrição, item, grupo, entidade..." /></label>
+        <label class="field"><span>Saldo inicial</span><input id="openingBalance" type="number" value="0" step="0.01" /></label>
+      </div>
+    </div>
+  </section>
+
+  <section class="grid">
+    <div class="card entrada"><div class="label">Entradas líquidas</div><div class="value" id="kpiEntradas">R$ 0,00</div><div class="hint" id="kpiEntradasHint">Receitas líquidas no filtro</div></div>
+    <div class="card saida"><div class="label">Saídas</div><div class="value" id="kpiSaidas">R$ 0,00</div><div class="hint" id="kpiSaidasHint">Pagas + a pagar no filtro</div></div>
+    <div class="card saldo"><div class="label">Saldo do período</div><div class="value" id="kpiSaldo">R$ 0,00</div><div class="hint">Entradas menos saídas</div></div>
+    <div class="card pendente"><div class="label">A pagar</div><div class="value" id="kpiPagar">R$ 0,00</div><div class="hint">Despesas pendentes no filtro</div></div>
+  </section>
+
+  <section class="twoCols">
+    <div class="panel">
+      <div class="panelHeader"><div><h2>Fluxo diário</h2><div class="muted">Entradas, saídas e saldo por data.</div></div></div>
+      <div class="chartWrap"><canvas id="dailyChart"></canvas></div>
+    </div>
+    <div class="panel">
+      <div class="panelHeader"><div><h2>Resumo executivo</h2><div class="muted">Leitura rápida do período filtrado.</div></div></div>
+      <div class="monthCard">
+        <div class="mini"><div class="k">Receita bruta</div><div class="v" id="miniBruta">R$ 0,00</div></div>
+        <div class="mini"><div class="k">Impostos</div><div class="v" id="miniImpostos">R$ 0,00</div></div>
+        <div class="mini"><div class="k">Já pago</div><div class="v" id="miniPago">R$ 0,00</div></div>
+        <div class="mini"><div class="k">Saldo acumulado</div><div class="v" id="miniAcumulado">R$ 0,00</div></div>
+      </div>
+      <div class="notice" id="insightBox">Aguardando leitura dos dados.</div>
+    </div>
+  </section>
+
+  <section class="panel">
+    <div class="panelHeader">
+      <div><h2>Livro caixa detalhado</h2><div class="muted">Movimentações consolidadas por data, com descrição, grupo, status e saldo acumulado.</div></div>
+      <div class="muted" id="tableCount">0 registros</div>
+    </div>
+    <div class="tableWrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Data</th><th>Tipo</th><th>Descrição</th><th>Grupo</th><th>Entidade/NF</th><th>Status</th><th>Entrada</th><th>Saída</th><th>Saldo diário</th><th>Saldo acumulado</th>
+          </tr>
+        </thead>
+        <tbody id="cashTable"><tr><td colspan="10" class="empty">Carregando dados...</td></tr></tbody>
+      </table>
+    </div>
+  </section>
+  <div class="footer">NVS Consultoria Empresarial • Estratégia • Análise • Resultados</div>
+</div>
+
+<script>
+const EXCEL_URL = './DRE_NVS.xlsx';
+let allRows = [];
+let chart = null;
+const meses = ['janeiro','fevereiro','março','abril','maio','junho','julho','agosto','setembro','outubro','novembro','dezembro'];
+
+const fmtBRL = new Intl.NumberFormat('pt-BR',{style:'currency',currency:'BRL'});
+const fmtDate = new Intl.DateTimeFormat('pt-BR',{timeZone:'UTC'});
+
+function normalize(str){return String(str ?? '').normalize('NFD').replace(/[\u0300-\u036f]/g,'').trim().toUpperCase();}
+function toNumber(v){
+  if(v === null || v === undefined || v === '') return 0;
+  if(typeof v === 'number') return isFinite(v) ? v : 0;
+  let s = String(v).replace(/R\$|\s/g,'').replace(/\./g,'').replace(',', '.');
+  let n = Number(s); return isFinite(n) ? n : 0;
+}
+function excelDateToJS(v){
+  if(!v) return null;
+  if(v instanceof Date && !isNaN(v)) return new Date(Date.UTC(v.getFullYear(), v.getMonth(), v.getDate()));
+  if(typeof v === 'number'){
+    const utc_days = Math.floor(v - 25569);
+    const utc_value = utc_days * 86400;
+    const date_info = new Date(utc_value * 1000);
+    return new Date(Date.UTC(date_info.getUTCFullYear(), date_info.getUTCMonth(), date_info.getUTCDate()));
+  }
+  const d = new Date(v);
+  if(!isNaN(d)) return new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()));
+  return null;
+}
+function dateKey(d){return d ? d.toISOString().slice(0,10) : '';}
+function monthName(d){return d ? meses[d.getUTCMonth()] : '';}
+function yearNum(d){return d ? d.getUTCFullYear() : '';}
+function findSheet(workbook, term){
+  const t = normalize(term);
+  return workbook.SheetNames.find(n => normalize(n).includes(t));
+}
+function sheetRows(workbook, sheetName){
+  return XLSX.utils.sheet_to_json(workbook.Sheets[sheetName], {header:1, raw:true, defval:null, blankrows:false});
+}
+function findHeaderIndex(rows, requiredWords){
+  for(let i=0;i<Math.min(rows.length,80);i++){
+    const joined = rows[i].map(normalize).join('|');
+    if(requiredWords.every(w => joined.includes(normalize(w)))) return i;
+  }
+  return -1;
+}
+function headerMap(headerRow){
+  const map = {};
+  headerRow.forEach((h,i)=>{ if(h!==null && h!==undefined && String(h).trim()!=='') map[normalize(h)] = i; });
+  return map;
+}
+function col(map, names){
+  for(const n of names){ const k = normalize(n); if(map[k] !== undefined) return map[k]; }
+  return -1;
+}
+function val(row, idx){return idx >= 0 ? row[idx] : null;}
+
+async function loadFromUrl(){
+  try{
+    const res = await fetch(EXCEL_URL, {cache:'no-store'});
+    if(!res.ok) throw new Error('HTTP ' + res.status);
+    const ab = await res.arrayBuffer();
+    processWorkbook(XLSX.read(ab, {type:'array', cellDates:true}));
+    setStatus('Planilha carregada', 'Base lida automaticamente: ' + EXCEL_URL);
+  }catch(e){
+    setStatus('Carregue a planilha', 'Não consegui abrir automaticamente. Use o botão “Carregar planilha” ou publique DRE_NVS.xlsx junto do HTML.');
+    document.getElementById('cashTable').innerHTML = '<tr><td colspan="10" class="empty">Aguardando upload da planilha.</td></tr>';
+  }
+}
+function setStatus(title, detail){document.getElementById('loadStatus').textContent=title;document.getElementById('loadDetail').textContent=detail;}
+
+document.getElementById('fileInput').addEventListener('change', async (ev)=>{
+  const file = ev.target.files[0]; if(!file) return;
+  const ab = await file.arrayBuffer();
+  processWorkbook(XLSX.read(ab, {type:'array', cellDates:true}));
+  setStatus('Planilha carregada', file.name + ' lida pelo navegador.');
+});
+['yearFilter','monthFilter','typeFilter','statusFilter','searchFilter','openingBalance'].forEach(id=>{
+  document.getElementById(id).addEventListener('input', render);
+  document.getElementById(id).addEventListener('change', render);
+});
+
+function processWorkbook(workbook){
+  const recSheet = findSheet(workbook, 'Receitas');
+  const despSheet = findSheet(workbook, 'Despesas');
+  if(!recSheet || !despSheet){
+    setStatus('Erro na estrutura', 'Não localizei as abas de Receitas e Despesas. Verifique os nomes das abas.');
+    return;
+  }
+  const receitas = parseReceitas(sheetRows(workbook, recSheet));
+  const despesas = parseDespesas(sheetRows(workbook, despSheet));
+  allRows = [...receitas, ...despesas].filter(r => r.data && (r.entrada || r.saida));
+  allRows.sort((a,b)=> a.data - b.data || (a.tipo==='entrada'?-1:1));
+  buildFilters();
+  render();
+}
+function parseReceitas(rows){
+  const idx = findHeaderIndex(rows, ['Data','Receita','Total Liquido']);
+  if(idx < 0) return [];
+  const map = headerMap(rows[idx]);
+  const cData = col(map,['Data']);
+  const cNF = col(map,['NOTA FISCAL','NF']);
+  const cReceita = col(map,['Receita']);
+  const cImp = col(map,['Imposto']);
+  const cBruto = col(map,['Total Bruto']);
+  const cLiquido = col(map,['Total Liquido','Total Líquido']);
+  const out = [];
+  for(let i=idx+1;i<rows.length;i++){
+    const row = rows[i];
+    const data = excelDateToJS(val(row,cData));
+    const bruto = toNumber(val(row,cBruto)) || toNumber(val(row,cReceita));
+    const imposto = toNumber(val(row,cImp));
+    const liquido = toNumber(val(row,cLiquido)) || Math.max(0, bruto - imposto);
+    if(!data || (!bruto && !liquido)) continue;
+    out.push({
+      data, tipo:'entrada', descricao:'Receita' + (val(row,cNF) ? ' • NF ' + val(row,cNF) : ''), grupo:'Receitas', entidade: val(row,cNF) ? 'Nota fiscal ' + val(row,cNF) : 'Receita', status:'RECEBIDO', entrada: liquido, saida:0, bruto, imposto, origem:'Receitas'
+    });
+  }
+  return out;
+}
+function parseDespesas(rows){
+  const idx = findHeaderIndex(rows, ['Data','Item','Valor a Pagar']);
+  if(idx < 0) return [];
+  const map = headerMap(rows[idx]);
+  const cData = col(map,['Data']);
+  const cItem = col(map,['Item']);
+  const cDesc = col(map,['Descrição','Descricao','Histórico','Historico','Observação','Observacao']);
+  const cGrupo = col(map,['Grupo']);
+  const cEnt = col(map,['ENTIDADE','Entidade']);
+  const cTotal = col(map,['TOTAL','Total']);
+  const cPagar = col(map,['Valor a Pagar']);
+  const cForma = col(map,['Forma de pgto','Forma de pagamento']);
+  const cDataPagar = col(map,['Data a pagar']);
+  const cStatus = col(map,['Status Pgto','Status']);
+  const out=[];
+  for(let i=idx+1;i<rows.length;i++){
+    const row=rows[i];
+    const item = String(val(row,cItem) ?? '').trim();
+    const descricao = String(val(row,cDesc) ?? '').trim();
+    const total = toNumber(val(row,cTotal));
+    const pagar = toNumber(val(row,cPagar));
+    if(!item && !total && !pagar) continue;
+    const status = normalize(val(row,cStatus)).includes('PAGO') ? 'PAGO' : (pagar > 0 ? 'A PAGAR' : 'PAGO');
+    const valorSaida = status === 'PAGO' ? (total || pagar) : (pagar || total);
+    const data = excelDateToJS(val(row,cDataPagar)) || excelDateToJS(val(row,cData));
+    if(!data || !valorSaida) continue;
+    out.push({
+      data, tipo:'saida', descricao:descricao || item || 'Despesa', grupo:String(val(row,cGrupo)??'Despesas').trim() || 'Despesas', entidade:String(val(row,cEnt)??'').trim(), status, entrada:0, saida:valorSaida, bruto:0, imposto:0, forma:String(val(row,cForma)??'').trim(), origem:'Despesas'
+    });
+  }
+  return out;
+}
+function buildFilters(){
+  const years = [...new Set(allRows.map(r=>yearNum(r.data)).filter(Boolean))].sort((a,b)=>b-a);
+  const y = document.getElementById('yearFilter'); y.innerHTML = '<option value="todos">Todos</option>' + years.map(v=>`<option value="${v}">${v}</option>`).join('');
+  if(years.length) y.value = years[0];
+  const m = document.getElementById('monthFilter'); m.innerHTML = '<option value="todos">Todos</option>' + meses.map((v,i)=>`<option value="${i}">${v.charAt(0).toUpperCase()+v.slice(1)}</option>`).join('');
+  const now = new Date();
+  if(years.includes(now.getFullYear())) { y.value = now.getFullYear(); m.value = now.getMonth(); }
+}
+function filteredRows(){
+  const y = document.getElementById('yearFilter').value;
+  const m = document.getElementById('monthFilter').value;
+  const t = document.getElementById('typeFilter').value;
+  const s = document.getElementById('statusFilter').value;
+  const q = normalize(document.getElementById('searchFilter').value);
+  return allRows.filter(r=>{
+    if(y !== 'todos' && String(yearNum(r.data)) !== y) return false;
+    if(m !== 'todos' && String(r.data.getUTCMonth()) !== m) return false;
+    if(t !== 'todos' && r.tipo !== t) return false;
+    if(s !== 'todos' && r.status !== s) return false;
+    if(q){
+      const txt = normalize([r.descricao,r.grupo,r.entidade,r.status,r.origem].join(' '));
+      if(!txt.includes(q)) return false;
+    }
+    return true;
+  }).sort((a,b)=> a.data-b.data || (a.tipo==='entrada'?-1:1));
+}
+function render(){
+  const rows = filteredRows();
+  const opening = toNumber(document.getElementById('openingBalance').value);
+  const entrada = rows.reduce((s,r)=>s+r.entrada,0);
+  const saida = rows.reduce((s,r)=>s+r.saida,0);
+  const bruto = rows.reduce((s,r)=>s+(r.bruto||0),0);
+  const imp = rows.reduce((s,r)=>s+(r.imposto||0),0);
+  const pagar = rows.filter(r=>r.tipo==='saida' && r.status==='A PAGAR').reduce((s,r)=>s+r.saida,0);
+  const pago = rows.filter(r=>r.tipo==='saida' && r.status==='PAGO').reduce((s,r)=>s+r.saida,0);
+  const saldo = entrada - saida;
+  const acumulado = opening + saldo;
+  setText('kpiEntradas', fmtBRL.format(entrada));
+  setText('kpiSaidas', fmtBRL.format(saida));
+  setText('kpiSaldo', fmtBRL.format(saldo));
+  setText('kpiPagar', fmtBRL.format(pagar));
+  setText('miniBruta', fmtBRL.format(bruto));
+  setText('miniImpostos', fmtBRL.format(imp));
+  setText('miniPago', fmtBRL.format(pago));
+  setText('miniAcumulado', fmtBRL.format(acumulado));
+  document.getElementById('kpiSaldo').style.color = saldo >= 0 ? 'var(--lime)' : 'var(--red)';
+  document.getElementById('miniAcumulado').style.color = acumulado >= 0 ? 'var(--lime)' : 'var(--red)';
+  document.getElementById('tableCount').textContent = rows.length + (rows.length === 1 ? ' registro' : ' registros');
+  renderTable(rows, opening);
+  renderChart(rows);
+  renderInsight(rows, entrada, saida, saldo, pagar, pago);
+}
+function setText(id,v){document.getElementById(id).textContent=v;}
+function renderTable(rows, opening){
+  const tb = document.getElementById('cashTable');
+  if(!rows.length){ tb.innerHTML = '<tr><td colspan="10" class="empty">Nenhum registro encontrado para o filtro selecionado.</td></tr>'; return; }
+  let acum = opening;
+  tb.innerHTML = rows.map(r=>{
+    const mov = r.entrada - r.saida; acum += mov;
+    return `<tr>
+      <td>${fmtDate.format(r.data)}</td>
+      <td><span class="pill ${r.tipo==='entrada'?'in':'out'}">${r.tipo==='entrada'?'Entrada':'Saída'}</span></td>
+      <td>${escapeHTML(r.descricao)}</td>
+      <td>${escapeHTML(r.grupo)}</td>
+      <td>${escapeHTML(r.entidade || '-')}</td>
+      <td><span class="pill ${r.status==='PAGO'||r.status==='RECEBIDO'?'ok':'warn'}">${r.status}</span></td>
+      <td class="num">${r.entrada ? fmtBRL.format(r.entrada) : '-'}</td>
+      <td class="num">${r.saida ? fmtBRL.format(r.saida) : '-'}</td>
+      <td class="num" style="color:${mov>=0?'var(--lime)':'var(--red)'}">${fmtBRL.format(mov)}</td>
+      <td class="num" style="color:${acum>=0?'var(--lime)':'var(--red)'}">${fmtBRL.format(acum)}</td>
+    </tr>`;
+  }).join('');
+}
+function renderChart(rows){
+  const byDate = new Map();
+  rows.forEach(r=>{
+    const k=dateKey(r.data); if(!byDate.has(k)) byDate.set(k,{entrada:0,saida:0});
+    byDate.get(k).entrada += r.entrada; byDate.get(k).saida += r.saida;
+  });
+  const labels=[...byDate.keys()].sort();
+  const entradas=labels.map(k=>byDate.get(k).entrada);
+  const saidas=labels.map(k=>byDate.get(k).saida);
+  const saldo=labels.map(k=>byDate.get(k).entrada-byDate.get(k).saida);
+  const ctx=document.getElementById('dailyChart');
+  if(chart) chart.destroy();
+  chart = new Chart(ctx,{type:'bar',data:{labels:labels.map(k=>k.split('-').reverse().join('/')),datasets:[
+    {label:'Entradas',data:entradas,borderWidth:1,backgroundColor:'rgba(57,255,20,.45)',borderColor:'rgba(57,255,20,.9)'},
+    {label:'Saídas',data:saidas,borderWidth:1,backgroundColor:'rgba(251,54,93,.42)',borderColor:'rgba(251,54,93,.9)'},
+    {label:'Saldo diário',data:saldo,type:'line',tension:.35,borderWidth:3,pointRadius:3,borderColor:'rgba(0,229,255,.95)',backgroundColor:'rgba(0,229,255,.12)'}
+  ]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{labels:{color:'#CBD5E1'}},tooltip:{callbacks:{label:(c)=>`${c.dataset.label}: ${fmtBRL.format(c.raw)}`}}},scales:{x:{ticks:{color:'#94A3B8',maxRotation:0,autoSkip:true},grid:{color:'rgba(148,163,184,.10)'}},y:{ticks:{color:'#94A3B8',callback:v=>fmtBRL.format(v)},grid:{color:'rgba(148,163,184,.12)'}}}}});
+}
+function renderInsight(rows, entrada, saida, saldo, pagar, pago){
+  const days = new Set(rows.map(r=>dateKey(r.data))).size || 1;
+  const avgIn = entrada/days, avgOut = saida/days;
+  const text = saldo >= 0
+    ? `No filtro atual, o caixa ficou positivo em ${fmtBRL.format(saldo)}. A entrada média diária foi de ${fmtBRL.format(avgIn)} e a saída média diária foi de ${fmtBRL.format(avgOut)}.`
+    : `No filtro atual, o caixa ficou negativo em ${fmtBRL.format(Math.abs(saldo))}. O ponto de atenção é reduzir saídas ou antecipar receitas para cobrir o período.`;
+  const pend = pagar > 0 ? ` Há ainda ${fmtBRL.format(pagar)} em contas a pagar.` : ` Não há contas pendentes no filtro atual.`;
+  document.getElementById('insightBox').textContent = text + pend;
+}
+function resetFilters(){
+  ['typeFilter','statusFilter'].forEach(id=>document.getElementById(id).value='todos');
+  document.getElementById('searchFilter').value='';
+  render();
+}
+function exportCSV(){
+  const rows = filteredRows();
+  const header = ['Data','Tipo','Descrição','Grupo','Entidade/NF','Status','Entrada','Saída'];
+  const lines = [header.join(';')].concat(rows.map(r=>[
+    fmtDate.format(r.data), r.tipo, r.descricao, r.grupo, r.entidade, r.status, r.entrada.toFixed(2).replace('.',','), r.saida.toFixed(2).replace('.',',')
+  ].map(x=>'"'+String(x??'').replace(/"/g,'""')+'"').join(';')));
+  const blob = new Blob([lines.join('\n')], {type:'text/csv;charset=utf-8'});
+  const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'livro_caixa_nvs.csv'; a.click(); URL.revokeObjectURL(a.href);
+}
+function escapeHTML(s){return String(s??'').replace(/[&<>'"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c]));}
+
+loadFromUrl();
+</script>
+</body>
+</html>
