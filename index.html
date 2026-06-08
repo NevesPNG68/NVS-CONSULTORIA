@@ -80,23 +80,73 @@ body{
 }
 .logoCard{
   flex:0 0 290px;
-  border-radius:28px;
+  position:relative;
+  isolation:isolate;
+  border-radius:30px;
   padding:10px;
-  background:linear-gradient(145deg,rgba(255,255,255,.96),rgba(226,232,240,.94));
-  border:1px solid rgba(0,229,255,.45);
+  background:linear-gradient(145deg,rgba(255,255,255,.98),rgba(226,232,240,.96));
+  border:2px solid rgba(0,229,255,.92);
   box-shadow:
-    0 0 0 1px rgba(255,255,255,.16) inset,
-    0 0 18px rgba(0,229,255,.55),
-    0 0 34px rgba(0,229,255,.35),
-    0 0 54px rgba(57,255,20,.18),
-    0 22px 55px rgba(0,0,0,.34);
+    0 0 10px rgba(0,229,255,.95),
+    0 0 24px rgba(0,229,255,.78),
+    0 0 44px rgba(57,255,20,.56),
+    0 0 72px rgba(168,85,247,.44),
+    0 24px 62px rgba(0,0,0,.42),
+    inset 0 0 18px rgba(0,229,255,.16);
+  animation:nvsNeonPulse 2.2s ease-in-out infinite alternate;
+}
+.logoCard::before{
+  content:"";
+  position:absolute;
+  inset:-10px;
+  z-index:-2;
+  border-radius:40px;
+  background:linear-gradient(135deg,rgba(0,229,255,.95),rgba(57,255,20,.85),rgba(168,85,247,.76),rgba(0,229,255,.95));
+  filter:blur(18px);
+  opacity:.88;
+  pointer-events:none;
+}
+.logoCard::after{
+  content:"";
+  position:absolute;
+  inset:0;
+  z-index:2;
+  border-radius:30px;
+  border:1px solid rgba(255,255,255,.72);
+  box-shadow:
+    inset 0 0 18px rgba(0,229,255,.24),
+    inset 0 0 32px rgba(57,255,20,.12);
+  pointer-events:none;
 }
 .nvsLogo{
   display:block;
+  position:relative;
+  z-index:1;
   width:100%;
   height:auto;
   border-radius:22px;
-  filter:drop-shadow(0 0 10px rgba(0,229,255,.28));
+  background:#fff;
+  filter:drop-shadow(0 0 14px rgba(0,229,255,.65)) drop-shadow(0 0 26px rgba(57,255,20,.34));
+}
+@keyframes nvsNeonPulse{
+  from{
+    box-shadow:
+      0 0 8px rgba(0,229,255,.86),
+      0 0 20px rgba(0,229,255,.64),
+      0 0 38px rgba(57,255,20,.45),
+      0 0 58px rgba(168,85,247,.32),
+      0 24px 62px rgba(0,0,0,.42),
+      inset 0 0 18px rgba(0,229,255,.14);
+  }
+  to{
+    box-shadow:
+      0 0 14px rgba(0,229,255,1),
+      0 0 34px rgba(0,229,255,.90),
+      0 0 62px rgba(57,255,20,.70),
+      0 0 92px rgba(168,85,247,.52),
+      0 24px 62px rgba(0,0,0,.42),
+      inset 0 0 24px rgba(0,229,255,.22);
+  }
 }
 .heroCopy{min-width:0}
 .heroCopy .eyebrow{font-size:12px;text-transform:uppercase;letter-spacing:.22em;color:var(--cyan);font-weight:900;margin-bottom:8px}
@@ -164,6 +214,7 @@ td.num{text-align:right;font-variant-numeric:tabular-nums;font-weight:800}
 .mini .k{color:var(--muted);font-size:12px;font-weight:900;text-transform:uppercase;letter-spacing:.12em}.mini .v{font-weight:950;font-size:22px;margin-top:4px}
 .notice{margin-top:12px;color:#CBD5E1;font-size:13px;border:1px dashed rgba(148,163,184,.35);padding:12px;border-radius:16px;background:rgba(255,255,255,.03)}
 .empty{padding:28px;text-align:center;color:var(--muted)}
+.statusInline{color:#CBD5E1;font-size:14px;font-weight:700;margin-top:6px}
 .topActions{margin-top:0}
 input[type=date]{width:100%;background:#07111F;color:var(--text);border:1px solid var(--line);border-radius:14px;padding:12px;font-weight:700;outline:none;color-scheme:dark}
 input[type=date]:focus{border-color:rgba(0,229,255,.7);box-shadow:0 0 0 4px rgba(0,229,255,.08)}
@@ -179,6 +230,96 @@ tr.finalRow td{background:rgba(57,255,20,.07);font-weight:950;border-top:1px sol
 @media(max-width:560px){
   .brand{align-items:flex-start}.logoMark{width:56px;height:56px;border-radius:17px}.grid{grid-template-columns:1fr}.filters{grid-template-columns:1fr}.card{padding:18px}.monthCard{grid-template-columns:1fr}table{min-width:900px}.hero{border-radius:24px}.panel{padding:14px}
 }
+
+
+/* ============================================================
+   EFEITO NEON DOS CARDS — PADRÃO DO MODELO DE REFERÊNCIA
+   Borda superior discreta por padrão e realce no hover/toque.
+   ============================================================ */
+.card,
+.panel,
+.mini{
+  --edge-rgb:0,229,255;
+  position:relative;
+  overflow:hidden;
+  isolation:isolate;
+  border:1px solid rgba(var(--edge-rgb),.22)!important;
+  border-top:4px solid rgba(var(--edge-rgb),.52)!important;
+  background:
+    linear-gradient(180deg, rgba(var(--edge-rgb),.055), rgba(15,23,42,.92) 30%, rgba(15,23,42,.84))!important;
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.05),
+    0 18px 52px rgba(0,0,0,.30)!important;
+  transform:none!important;
+  filter:none!important;
+  transition:
+    border-color .20s ease,
+    border-top-color .20s ease,
+    box-shadow .20s ease,
+    background .20s ease!important;
+}
+
+/* Cores específicas dos cards principais */
+.card.saldo{--edge-rgb:0,229,255;}
+.card.entrada{--edge-rgb:57,255,20;}
+.card.saida{--edge-rgb:251,54,93;}
+.card.pendente{--edge-rgb:245,158,11;}
+
+/* Cores dos painéis */
+.wrapper > section.panel:nth-of-type(2){--edge-rgb:168,85,247;}
+.wrapper > section.panel:nth-of-type(5){--edge-rgb:0,229,255;}
+.twoCols .panel:nth-child(1){--edge-rgb:57,255,20;}
+.twoCols .panel:nth-child(2){--edge-rgb:245,158,11;}
+
+/* Cores dos mini cards do resumo executivo */
+.monthCard .mini:nth-child(1){--edge-rgb:0,229,255;}
+.monthCard .mini:nth-child(2){--edge-rgb:251,54,93;}
+.monthCard .mini:nth-child(3){--edge-rgb:57,255,20;}
+.monthCard .mini:nth-child(4){--edge-rgb:168,85,247;}
+
+.card:hover,
+.panel:hover,
+.mini:hover,
+.card:focus-within,
+.panel:focus-within,
+.mini:focus-within,
+.card:active,
+.panel:active,
+.mini:active,
+.card.touch-glow,
+.panel.touch-glow,
+.mini.touch-glow{
+  border-color:rgba(var(--edge-rgb),.38)!important;
+  border-top-color:rgba(var(--edge-rgb),1)!important;
+  background:
+    linear-gradient(180deg, rgba(var(--edge-rgb),.078), rgba(15,23,42,.94) 30%, rgba(15,23,42,.88))!important;
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.07),
+    inset 0 9px 18px rgba(var(--edge-rgb),.07),
+    0 -1px 0 rgba(var(--edge-rgb),.55),
+    0 18px 52px rgba(0,0,0,.32)!important;
+  transform:none!important;
+  filter:none!important;
+}
+
+/* Desliga o pseudo-elemento antigo da barrinha do card; agora o neon é a própria borda superior */
+.card::before,
+.card::after,
+.panel::before,
+.panel::after,
+.mini::before,
+.mini::after{
+  display:none!important;
+  opacity:0!important;
+}
+
+/* Preserva os pseudo-elementos da hero e da logo */
+.hero::before,
+.logoCard::before,
+.logoCard::after{
+  display:block!important;
+}
+
 </style>
 </head>
 <body>
@@ -328,12 +469,16 @@ async function loadFromUrl(){
     if(!res.ok) throw new Error('HTTP ' + res.status);
     const ab = await res.arrayBuffer();
     processWorkbook(XLSX.read(ab, {type:'array', cellDates:true}));
+    setStatus('Base carregada automaticamente: DRE_NVS.xlsx');
   }catch(e){
-    console.warn('Planilha DRE_NVS.xlsx não localizada automaticamente.', e);
+    setStatus('Não consegui carregar DRE_NVS.xlsx automaticamente. Confira se a planilha está no mesmo diretório do index.html no GitHub.');
     document.getElementById('cashTable').innerHTML = '<tr><td colspan="10" class="empty">Planilha não localizada no GitHub.</td></tr>';
   }
 }
-function setStatus(detail){}
+function setStatus(detail){
+  const el = document.getElementById('loadDetail');
+  if(el) el.textContent = detail;
+}
 
 ['startDateFilter','endDateFilter','typeFilter','statusFilter','searchFilter'].forEach(id=>{
   const el = document.getElementById(id);
@@ -579,6 +724,26 @@ function exportCSV(){
   const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'livro_caixa_nvs.csv'; a.click(); URL.revokeObjectURL(a.href);
 }
 function escapeHTML(s){return String(s??'').replace(/[&<>'"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c]));}
+
+
+// Efeito neon nos cards também em telas de toque.
+(function(){
+  const selector = '.card, .panel, .mini';
+  document.addEventListener('pointerdown', function(e){
+    const el = e.target.closest(selector);
+    if(!el) return;
+    el.classList.add('touch-glow');
+  }, {passive:true});
+  document.addEventListener('pointerup', function(e){
+    const el = e.target.closest(selector);
+    if(!el) return;
+    setTimeout(function(){ el.classList.remove('touch-glow'); }, 650);
+  }, {passive:true});
+  document.addEventListener('pointercancel', function(e){
+    const el = e.target.closest(selector);
+    if(el) el.classList.remove('touch-glow');
+  }, {passive:true});
+})();
 
 loadFromUrl();
 </script>
