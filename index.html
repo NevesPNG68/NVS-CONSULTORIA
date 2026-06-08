@@ -320,6 +320,31 @@ tr.finalRow td{background:rgba(57,255,20,.07);font-weight:950;border-top:1px sol
   display:block!important;
 }
 
+
+/* ============================================================
+   AJUSTE SOLICITADO — LOGO SEM EFEITO NEON
+   Mantém o neon nos cards/painéis, mas remove brilho, halo e pulso da logo.
+   ============================================================ */
+.logoCard{
+  border:1px solid rgba(148,163,184,.28)!important;
+  background:linear-gradient(145deg,rgba(255,255,255,.98),rgba(226,232,240,.96))!important;
+  box-shadow:0 18px 42px rgba(0,0,0,.28)!important;
+  animation:none!important;
+  filter:none!important;
+}
+.logoCard::before,
+.logoCard::after{
+  display:none!important;
+  opacity:0!important;
+  content:none!important;
+  box-shadow:none!important;
+  filter:none!important;
+}
+.nvsLogo{
+  filter:none!important;
+  box-shadow:none!important;
+}
+
 </style>
 </head>
 <body>
@@ -408,6 +433,8 @@ let allRows = [];
 let chart = null;
 let baseMinDate = '';
 let baseMaxDate = '';
+let defaultStartDate = '';
+let defaultEndDate = '';
 const meses = ['janeiro','fevereiro','março','abril','maio','junho','julho','agosto','setembro','outubro','novembro','dezembro'];
 
 const fmtBRL = new Intl.NumberFormat('pt-BR',{style:'currency',currency:'BRL'});
@@ -438,6 +465,16 @@ function jsDateFromKey(k){
   return new Date(Date.UTC(y, m-1, d));
 }
 function dateKey(d){return d ? d.toISOString().slice(0,10) : '';}
+
+function pad2(n){return String(n).padStart(2,'0');}
+function makeDateKey(y,mIndex,d){return `${y}-${pad2(mIndex+1)}-${pad2(d)}`;}
+function currentMonthRange(){
+  const now = new Date();
+  const y = now.getFullYear();
+  const m = now.getMonth();
+  const lastDay = new Date(y, m + 1, 0).getDate();
+  return {start:makeDateKey(y,m,1), end:makeDateKey(y,m,lastDay)};
+}
 function findSheet(workbook, terms){
   const list = Array.isArray(terms) ? terms : [terms];
   return workbook.SheetNames.find(n => list.some(t => normalize(n).includes(normalize(t))));
@@ -584,12 +621,21 @@ function buildDateFilters(){
   if(!allRows.length) return;
   baseMinDate = dateKey(allRows[0].data);
   baseMaxDate = dateKey(allRows[allRows.length-1].data);
-  document.getElementById('startDateFilter').value = baseMinDate;
-  document.getElementById('endDateFilter').value = baseMaxDate;
+
+  // Padrão solicitado: carregar o filtro já no mês corrente.
+  // A seleção de datas e o botão de limpar filtros voltam para este mesmo período.
+  const month = currentMonthRange();
+  defaultStartDate = month.start;
+  defaultEndDate = month.end;
+
+  const startEl = document.getElementById('startDateFilter');
+  const endEl = document.getElementById('endDateFilter');
+  startEl.value = defaultStartDate;
+  endEl.value = defaultEndDate;
 }
 function getPeriod(){
-  let start = document.getElementById('startDateFilter').value || baseMinDate;
-  let end = document.getElementById('endDateFilter').value || baseMaxDate;
+  let start = document.getElementById('startDateFilter').value || defaultStartDate || baseMinDate;
+  let end = document.getElementById('endDateFilter').value || defaultEndDate || baseMaxDate;
   if(start && end && start > end){ const tmp=start; start=end; end=tmp; }
   return {start, end, startDate:jsDateFromKey(start), endDate:jsDateFromKey(end)};
 }
@@ -645,7 +691,7 @@ function render(){
   document.getElementById('miniAcumulado').style.color = saldoFinal >= 0 ? 'var(--lime)' : 'var(--red)';
   document.getElementById('tableCount').textContent = rows.length + (rows.length === 1 ? ' registro' : ' registros');
   renderTable(rows, saldoAnterior);
-  renderChart(periodAllRows);
+  renderChart(periodAllRows, saldoAnterior);
   renderInsight(periodAllRows, entrada, saida, saldoPeriodo, pagar, pago, saldoAnterior, saldoFinal);
 }
 function setText(id,v){const el=document.getElementById(id); if(el) el.textContent=v;}
@@ -674,7 +720,7 @@ function renderTable(rows, saldoAnterior){
   }).join('');
   tb.innerHTML = openingRow + body + `<tr class="finalRow"><td colspan="9">Saldo final do período</td><td class="num" style="color:${acum>=0?'var(--lime)':'var(--red)'}">${fmtBRL.format(acum)}</td></tr>`;
 }
-function renderChart(rows){
+function renderChart(rows, saldoAnterior=0){
   const byDate = new Map();
   rows.forEach(r=>{
     const k=dateKey(r.data); if(!byDate.has(k)) byDate.set(k,{entrada:0,saida:0});
@@ -683,13 +729,21 @@ function renderChart(rows){
   const labels=[...byDate.keys()].sort();
   const entradas=labels.map(k=>byDate.get(k).entrada);
   const saidas=labels.map(k=>byDate.get(k).saida);
-  const saldo=labels.map(k=>byDate.get(k).entrada-byDate.get(k).saida);
+
+  // Correção do gráfico: a linha azul agora representa o saldo acumulado
+  // do caixa, partindo do saldo anterior ao período e somando o movimento diário.
+  let acumulado = saldoAnterior;
+  const saldoAcumulado = labels.map(k=>{
+    acumulado += byDate.get(k).entrada - byDate.get(k).saida;
+    return acumulado;
+  });
+
   const ctx=document.getElementById('dailyChart');
   if(chart) chart.destroy();
   chart = new Chart(ctx,{type:'bar',data:{labels:labels.map(k=>k.split('-').reverse().join('/')),datasets:[
     {label:'Entradas',data:entradas,borderWidth:1,backgroundColor:'rgba(57,255,20,.45)',borderColor:'rgba(57,255,20,.9)'},
     {label:'Saídas',data:saidas,borderWidth:1,backgroundColor:'rgba(251,54,93,.42)',borderColor:'rgba(251,54,93,.9)'},
-    {label:'Saldo diário',data:saldo,type:'line',tension:.35,borderWidth:3,pointRadius:3,borderColor:'rgba(0,229,255,.95)',backgroundColor:'rgba(0,229,255,.12)'}
+    {label:'Saldo acumulado',data:saldoAcumulado,type:'line',tension:.35,borderWidth:3,pointRadius:3,borderColor:'rgba(0,229,255,.95)',backgroundColor:'rgba(0,229,255,.12)'}
   ]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{labels:{color:'#CBD5E1'}},tooltip:{callbacks:{label:(c)=>`${c.dataset.label}: ${fmtBRL.format(c.raw)}`}}},scales:{x:{ticks:{color:'#94A3B8',maxRotation:0,autoSkip:true},grid:{color:'rgba(148,163,184,.10)'}},y:{ticks:{color:'#94A3B8',callback:v=>fmtBRL.format(v)},grid:{color:'rgba(148,163,184,.12)'}}}}});
 }
 function renderInsight(rows, entrada, saida, saldo, pagar, pago, saldoAnterior, saldoFinal){
@@ -703,8 +757,11 @@ function renderInsight(rows, entrada, saida, saldo, pagar, pago, saldoAnterior, 
   document.getElementById('insightBox').textContent = text + media + pend;
 }
 function resetFilters(){
-  document.getElementById('startDateFilter').value = baseMinDate;
-  document.getElementById('endDateFilter').value = baseMaxDate;
+  const month = currentMonthRange();
+  defaultStartDate = month.start;
+  defaultEndDate = month.end;
+  document.getElementById('startDateFilter').value = defaultStartDate;
+  document.getElementById('endDateFilter').value = defaultEndDate;
   ['typeFilter','statusFilter'].forEach(id=>document.getElementById(id).value='todos');
   document.getElementById('searchFilter').value='';
   render();
