@@ -12,13 +12,11 @@ NVS CONSULTORIA EMPRESARIAL — LIVRO CAIXA MODERNO
 Como usar no GitHub Pages:
 1) Suba este arquivo HTML para o repositório.
 2) Suba a planilha no mesmo diretório com o nome: DRE_NVS.xlsx
-3) Suba também o arquivo de logotipo no mesmo diretório com o nome: logo_nvs.png
-4) Se quiser usar outro nome/caminho, altere a linha abaixo:
+3) Se quiser usar outro nome/caminho, altere a linha abaixo:
    const EXCEL_URL = './DRE_NVS.xlsx';
 
 Aba de receitas esperada: contém "Receitas" no nome.
 Aba de despesas esperada: contém "Despesas" no nome.
-O HTML também permite carregar a planilha manualmente pelo botão.
 ============================================================
 -->
 
@@ -74,34 +72,19 @@ body{
   background:linear-gradient(120deg,rgba(0,229,255,.20),transparent 32%,rgba(57,255,20,.12),transparent 70%,rgba(168,85,247,.16));
   pointer-events:none;
 }
-.heroContent{position:relative;display:grid;grid-template-columns:1.3fr .7fr;gap:26px;align-items:center}
+.heroContent{position:relative;display:block}
 .brand{display:flex;gap:18px;align-items:center;margin-bottom:18px}
 .logoMark{
-  width:108px;height:108px;border-radius:26px;
+  width:68px;height:68px;border-radius:20px;
   display:grid;place-items:center;
-  background:linear-gradient(145deg,#ffffff,#eef2f7);
-  border:1px solid rgba(255,255,255,.35);
-  box-shadow:0 20px 48px rgba(0,0,0,.28), inset 0 1px 0 rgba(255,255,255,.75);
-  overflow:hidden;
-  padding:6px;
-}
-.logoMark img{width:100%;height:100%;object-fit:contain;display:block;border-radius:20px}
-.logoWatermark{
-  position:absolute;right:-44px;bottom:-76px;width:360px;max-width:44vw;opacity:.08;filter:grayscale(20%);pointer-events:none;
+  color:#fff;font-weight:900;font-size:24px;letter-spacing:-1px;
+  background:linear-gradient(145deg,#071A34,#133B73 55%,#E2E8F0);
+  border:1px solid rgba(255,255,255,.18);
+  box-shadow:0 18px 40px rgba(37,99,235,.22), inset 0 1px 0 rgba(255,255,255,.35);
 }
 .brandText .eyebrow{font-size:12px;text-transform:uppercase;letter-spacing:.22em;color:var(--cyan);font-weight:800}
-h1{font-size:clamp(30px,5vw,58px);line-height:.98;letter-spacing:-.05em;margin:0 0 12px}
+h1{font-size:clamp(30px,5vw,58px);line-height:.98;letter-spacing:-.05em;margin:0 0 10px}
 .hero p{color:#CBD5E1;font-size:clamp(15px,1.5vw,18px);max-width:850px}
-.badges{display:flex;gap:10px;flex-wrap:wrap;margin-top:22px}
-.badge{border:1px solid var(--line);background:rgba(15,23,42,.72);padding:9px 12px;border-radius:999px;color:#DCE6F5;font-size:13px;font-weight:700}
-.heroPanel{
-  border:1px solid var(--line);
-  background:linear-gradient(180deg,rgba(255,255,255,.08),rgba(255,255,255,.03));
-  border-radius:26px;padding:22px;box-shadow:inset 0 1px 0 rgba(255,255,255,.08);
-}
-.statusTitle{color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.16em;margin-bottom:10px;font-weight:800}
-.statusValue{font-size:24px;font-weight:900;margin-bottom:6px}
-.statusSmall{color:var(--muted);font-size:13px}
 .actions{display:flex;gap:12px;flex-wrap:wrap;margin-top:18px}
 .btn,label.btn{
   appearance:none;border:0;cursor:pointer;text-decoration:none;
@@ -154,47 +137,35 @@ td.num{text-align:right;font-variant-numeric:tabular-nums;font-weight:800}
 .notice{margin-top:12px;color:#CBD5E1;font-size:13px;border:1px dashed rgba(148,163,184,.35);padding:12px;border-radius:16px;background:rgba(255,255,255,.03)}
 .footer{margin-top:22px;color:var(--muted);font-size:12px;text-align:center}
 .empty{padding:28px;text-align:center;color:var(--muted)}
+.statusInline{color:#CBD5E1;font-size:14px;font-weight:700;margin-top:6px}
+.topActions{margin-top:0}
+input[type=date]{width:100%;background:#07111F;color:var(--text);border:1px solid var(--line);border-radius:14px;padding:12px;font-weight:700;outline:none;color-scheme:dark}
+input[type=date]:focus{border-color:rgba(0,229,255,.7);box-shadow:0 0 0 4px rgba(0,229,255,.08)}
+tr.balanceRow td{background:rgba(0,229,255,.06);font-weight:900}
+tr.finalRow td{background:rgba(57,255,20,.07);font-weight:950;border-top:1px solid rgba(57,255,20,.35)}
+
 @media(max-width:980px){
-  .hero{padding:24px}.heroContent{grid-template-columns:1fr}.grid{grid-template-columns:repeat(2,1fr)}.card{grid-column:span 1}.filters{grid-template-columns:repeat(2,1fr)}.twoCols{grid-template-columns:1fr}.chartWrap{height:300px}.wrapper{width:min(96vw,1380px)}
+  .hero{padding:24px}.grid{grid-template-columns:repeat(2,1fr)}.card{grid-column:span 1}.filters{grid-template-columns:repeat(2,1fr)}.twoCols{grid-template-columns:1fr}.chartWrap{height:300px}.wrapper{width:min(96vw,1380px)}
 }
 @media(max-width:560px){
-  .brand{align-items:flex-start}.logoMark{width:78px;height:78px;border-radius:20px}.logoMark img{border-radius:16px}.grid{grid-template-columns:1fr}.filters{grid-template-columns:1fr}.card{padding:18px}.monthCard{grid-template-columns:1fr}table{min-width:900px}.hero{border-radius:24px}.panel{padding:14px}
+  .brand{align-items:flex-start}.logoMark{width:56px;height:56px;border-radius:17px}.grid{grid-template-columns:1fr}.filters{grid-template-columns:1fr}.card{padding:18px}.monthCard{grid-template-columns:1fr}table{min-width:900px}.hero{border-radius:24px}.panel{padding:14px}
 }
 </style>
 </head>
 <body>
 <div class="wrapper">
-  <section class="hero">
-    <img class="logoWatermark" src="./logo_nvs.png" alt="" aria-hidden="true">
+  <section class="hero compactHero">
     <div class="heroContent">
       <div>
         <div class="brand">
-          <div class="logoMark"><img src="./logo_nvs.png" alt="NVS Consultoria Empresarial"></div>
+          <div class="logoMark">NVS</div>
           <div class="brandText">
             <div class="eyebrow">Consultoria Empresarial</div>
             <div style="color:#94A3B8;font-weight:700">Livro Caixa Inteligente</div>
           </div>
         </div>
-        <h1>Livro Caixa moderno da NVS</h1>
-        <p>Dashboard financeiro em HTML para acompanhar receitas, despesas, impostos, saldos, contas pagas e valores a pagar a partir da planilha Excel.</p>
-        <div class="badges">
-          <span class="badge">Leitura automática do Excel</span>
-          <span class="badge">Receitas pela aba “Receitas”</span>
-          <span class="badge">Despesas pela aba “Despesas”</span>
-          <span class="badge">Pronto para GitHub Pages</span>
-        </div>
-      </div>
-      <div class="heroPanel">
-        <div class="statusTitle">Status da base</div>
-        <div class="statusValue" id="loadStatus">Carregando planilha...</div>
-        <div class="statusSmall" id="loadDetail">Tentando abrir DRE_NVS.xlsx no mesmo diretório do HTML.</div>
-        <div class="actions">
-          <label class="btn" for="fileInput">📎 Carregar planilha</label>
-          <button class="btn secondary" onclick="resetFilters()">↻ Limpar filtros</button>
-          <button class="btn secondary" onclick="exportCSV()">⇩ Exportar CSV</button>
-        </div>
-        <input id="fileInput" type="file" accept=".xlsx,.xls,.xlsm" />
-        <div class="notice">No GitHub, deixe a planilha no mesmo diretório deste HTML com o nome <b>DRE_NVS.xlsx</b> e o logotipo como <b>logo_nvs.png</b>. Se mudar o nome da planilha, ajuste a variável <b>EXCEL_URL</b>.</div>
+        <h1>Livro Caixa NVS</h1>
+        <div class="statusInline" id="loadDetail">Lendo automaticamente a planilha DRE_NVS.xlsx no GitHub...</div>
       </div>
     </div>
   </section>
@@ -203,24 +174,28 @@ td.num{text-align:right;font-variant-numeric:tabular-nums;font-weight:800}
     <div class="panelHeader">
       <div>
         <h2>Filtros do livro caixa</h2>
-        <div class="muted">Filtre por ano, mês, tipo, status e descrição/fornecedor.</div>
+        <div class="muted">Por padrão, o relatório abre desde a menor data da base até a última movimentação.</div>
       </div>
-      <div class="filters">
-        <label class="field"><span>Ano</span><select id="yearFilter"></select></label>
-        <label class="field"><span>Mês</span><select id="monthFilter"></select></label>
-        <label class="field"><span>Tipo</span><select id="typeFilter"><option value="todos">Todos</option><option value="entrada">Entradas</option><option value="saida">Saídas</option></select></label>
-        <label class="field"><span>Status</span><select id="statusFilter"><option value="todos">Todos</option><option value="PAGO">Pago</option><option value="A PAGAR">A pagar</option></select></label>
-        <label class="field"><span>Busca</span><input id="searchFilter" type="text" placeholder="Descrição, item, grupo, entidade..." /></label>
-        <label class="field"><span>Saldo inicial</span><input id="openingBalance" type="number" value="0" step="0.01" /></label>
+      <div class="actions topActions">
+        <button class="btn secondary" onclick="resetFilters()">↻ Limpar filtros</button>
+        <button class="btn secondary" onclick="exportCSV()">⇩ Exportar CSV</button>
       </div>
+    </div>
+    <div class="filters">
+      <label class="field"><span>Data inicial</span><input id="startDateFilter" type="date" /></label>
+      <label class="field"><span>Data final</span><input id="endDateFilter" type="date" /></label>
+      <label class="field"><span>Tipo</span><select id="typeFilter"><option value="todos">Todos</option><option value="entrada">Entradas</option><option value="saida">Saídas</option></select></label>
+      <label class="field"><span>Status</span><select id="statusFilter"><option value="todos">Todos</option><option value="PAGO">Pago</option><option value="A PAGAR">A pagar</option><option value="RECEBIDO">Recebido</option></select></label>
+      <label class="field"><span>Busca</span><input id="searchFilter" type="text" placeholder="Descrição, NF, grupo, entidade..." /></label>
+      <label class="field"><span>Saldo antes da base</span><input id="openingBalance" type="number" value="0" step="0.01" /></label>
     </div>
   </section>
 
   <section class="grid">
-    <div class="card entrada"><div class="label">Entradas líquidas</div><div class="value" id="kpiEntradas">R$ 0,00</div><div class="hint" id="kpiEntradasHint">Receitas líquidas no filtro</div></div>
-    <div class="card saida"><div class="label">Saídas</div><div class="value" id="kpiSaidas">R$ 0,00</div><div class="hint" id="kpiSaidasHint">Pagas + a pagar no filtro</div></div>
-    <div class="card saldo"><div class="label">Saldo do período</div><div class="value" id="kpiSaldo">R$ 0,00</div><div class="hint">Entradas menos saídas</div></div>
-    <div class="card pendente"><div class="label">A pagar</div><div class="value" id="kpiPagar">R$ 0,00</div><div class="hint">Despesas pendentes no filtro</div></div>
+    <div class="card saldo"><div class="label">Saldo anterior</div><div class="value" id="kpiAnterior">R$ 0,00</div><div class="hint">Acumulado antes da data inicial</div></div>
+    <div class="card entrada"><div class="label">Entradas líquidas</div><div class="value" id="kpiEntradas">R$ 0,00</div><div class="hint" id="kpiEntradasHint">Receitas líquidas no período</div></div>
+    <div class="card saida"><div class="label">Saídas</div><div class="value" id="kpiSaidas">R$ 0,00</div><div class="hint" id="kpiSaidasHint">Despesas do período</div></div>
+    <div class="card pendente"><div class="label">Saldo final</div><div class="value" id="kpiFinal">R$ 0,00</div><div class="hint">Saldo anterior + movimento do período</div></div>
   </section>
 
   <section class="twoCols">
@@ -242,7 +217,7 @@ td.num{text-align:right;font-variant-numeric:tabular-nums;font-weight:800}
 
   <section class="panel">
     <div class="panelHeader">
-      <div><h2>Livro caixa detalhado</h2><div class="muted">Movimentações consolidadas por data, com descrição, grupo, status e saldo acumulado.</div></div>
+      <div><h2>Livro caixa detalhado</h2><div class="muted">Movimentações consolidadas por data, com origem, grupo, status e saldo acumulado.</div></div>
       <div class="muted" id="tableCount">0 registros</div>
     </div>
     <div class="tableWrap">
@@ -263,6 +238,8 @@ td.num{text-align:right;font-variant-numeric:tabular-nums;font-weight:800}
 const EXCEL_URL = './DRE_NVS.xlsx';
 let allRows = [];
 let chart = null;
+let baseMinDate = '';
+let baseMaxDate = '';
 const meses = ['janeiro','fevereiro','março','abril','maio','junho','julho','agosto','setembro','outubro','novembro','dezembro'];
 
 const fmtBRL = new Intl.NumberFormat('pt-BR',{style:'currency',currency:'BRL'});
@@ -280,20 +257,22 @@ function excelDateToJS(v){
   if(v instanceof Date && !isNaN(v)) return new Date(Date.UTC(v.getFullYear(), v.getMonth(), v.getDate()));
   if(typeof v === 'number'){
     const utc_days = Math.floor(v - 25569);
-    const utc_value = utc_days * 86400;
-    const date_info = new Date(utc_value * 1000);
+    const date_info = new Date(utc_days * 86400 * 1000);
     return new Date(Date.UTC(date_info.getUTCFullYear(), date_info.getUTCMonth(), date_info.getUTCDate()));
   }
   const d = new Date(v);
   if(!isNaN(d)) return new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()));
   return null;
 }
+function jsDateFromKey(k){
+  if(!k) return null;
+  const [y,m,d] = k.split('-').map(Number);
+  return new Date(Date.UTC(y, m-1, d));
+}
 function dateKey(d){return d ? d.toISOString().slice(0,10) : '';}
-function monthName(d){return d ? meses[d.getUTCMonth()] : '';}
-function yearNum(d){return d ? d.getUTCFullYear() : '';}
-function findSheet(workbook, term){
-  const t = normalize(term);
-  return workbook.SheetNames.find(n => normalize(n).includes(t));
+function findSheet(workbook, terms){
+  const list = Array.isArray(terms) ? terms : [terms];
+  return workbook.SheetNames.find(n => list.some(t => normalize(n).includes(normalize(t))));
 }
 function sheetRows(workbook, sheetName){
   return XLSX.utils.sheet_to_json(workbook.Sheets[sheetName], {header:1, raw:true, defval:null, blankrows:false});
@@ -322,45 +301,43 @@ async function loadFromUrl(){
     if(!res.ok) throw new Error('HTTP ' + res.status);
     const ab = await res.arrayBuffer();
     processWorkbook(XLSX.read(ab, {type:'array', cellDates:true}));
-    setStatus('Planilha carregada', 'Base lida automaticamente: ' + EXCEL_URL);
+    setStatus('Base carregada automaticamente: DRE_NVS.xlsx');
   }catch(e){
-    setStatus('Carregue a planilha', 'Não consegui abrir automaticamente. Use o botão “Carregar planilha” ou publique DRE_NVS.xlsx junto do HTML.');
-    document.getElementById('cashTable').innerHTML = '<tr><td colspan="10" class="empty">Aguardando upload da planilha.</td></tr>';
+    setStatus('Não consegui carregar DRE_NVS.xlsx automaticamente. Confira se a planilha está no mesmo diretório do index.html no GitHub.');
+    document.getElementById('cashTable').innerHTML = '<tr><td colspan="10" class="empty">Planilha não localizada no GitHub.</td></tr>';
   }
 }
-function setStatus(title, detail){document.getElementById('loadStatus').textContent=title;document.getElementById('loadDetail').textContent=detail;}
+function setStatus(detail){
+  const el = document.getElementById('loadDetail');
+  if(el) el.textContent = detail;
+}
 
-document.getElementById('fileInput').addEventListener('change', async (ev)=>{
-  const file = ev.target.files[0]; if(!file) return;
-  const ab = await file.arrayBuffer();
-  processWorkbook(XLSX.read(ab, {type:'array', cellDates:true}));
-  setStatus('Planilha carregada', file.name + ' lida pelo navegador.');
-});
-['yearFilter','monthFilter','typeFilter','statusFilter','searchFilter','openingBalance'].forEach(id=>{
-  document.getElementById(id).addEventListener('input', render);
-  document.getElementById(id).addEventListener('change', render);
+['startDateFilter','endDateFilter','typeFilter','statusFilter','searchFilter','openingBalance'].forEach(id=>{
+  const el = document.getElementById(id);
+  if(el){ el.addEventListener('input', render); el.addEventListener('change', render); }
 });
 
 function processWorkbook(workbook){
-  const recSheet = findSheet(workbook, 'Receitas');
-  const despSheet = findSheet(workbook, 'Despesas');
+  const recSheet = findSheet(workbook, ['Receitas','Receita']);
+  const despSheet = findSheet(workbook, ['Despesas','Despesa']);
   if(!recSheet || !despSheet){
-    setStatus('Erro na estrutura', 'Não localizei as abas de Receitas e Despesas. Verifique os nomes das abas.');
+    setStatus('Erro: não localizei as abas de Receita e Despesa na planilha.');
     return;
   }
   const receitas = parseReceitas(sheetRows(workbook, recSheet));
   const despesas = parseDespesas(sheetRows(workbook, despSheet));
   allRows = [...receitas, ...despesas].filter(r => r.data && (r.entrada || r.saida));
   allRows.sort((a,b)=> a.data - b.data || (a.tipo==='entrada'?-1:1));
-  buildFilters();
+  buildDateFilters();
   render();
 }
 function parseReceitas(rows){
-  const idx = findHeaderIndex(rows, ['Data','Receita','Total Liquido']);
+  const idx = findHeaderIndex(rows, ['Data','Receita']);
   if(idx < 0) return [];
   const map = headerMap(rows[idx]);
   const cData = col(map,['Data']);
-  const cNF = col(map,['NOTA FISCAL','NF']);
+  const cDesc = col(map,['DESCRIÇÃO','DESCRICAO','Descrição','Descricao']);
+  const cNF = col(map,['NOTA FISCAL','NF','Nota Fiscal']);
   const cReceita = col(map,['Receita']);
   const cImp = col(map,['Imposto']);
   const cBruto = col(map,['Total Bruto']);
@@ -371,23 +348,36 @@ function parseReceitas(rows){
     const data = excelDateToJS(val(row,cData));
     const bruto = toNumber(val(row,cBruto)) || toNumber(val(row,cReceita));
     const imposto = toNumber(val(row,cImp));
-    const liquido = toNumber(val(row,cLiquido)) || Math.max(0, bruto - imposto);
+    const liquido = toNumber(val(row,cLiquido)) || (bruto - imposto);
     if(!data || (!bruto && !liquido)) continue;
+    const desc = String(val(row,cDesc) ?? '').trim() || 'Receita';
+    const nf = String(val(row,cNF) ?? '').trim();
     out.push({
-      data, tipo:'entrada', descricao:'Receita' + (val(row,cNF) ? ' • NF ' + val(row,cNF) : ''), grupo:'Receitas', entidade: val(row,cNF) ? 'Nota fiscal ' + val(row,cNF) : 'Receita', status:'RECEBIDO', entrada: liquido, saida:0, bruto, imposto, origem:'Receitas'
+      data,
+      tipo:'entrada',
+      descricao: desc,
+      grupo:'Receitas',
+      entidade: nf ? 'NF ' + nf : '-',
+      status:'RECEBIDO',
+      entrada: liquido,
+      saida:0,
+      bruto,
+      imposto,
+      origem:'Receitas',
+      nf
     });
   }
   return out;
 }
 function parseDespesas(rows){
-  const idx = findHeaderIndex(rows, ['Data','Item','Valor a Pagar']);
+  const idx = findHeaderIndex(rows, ['Data','Valor a Pagar']);
   if(idx < 0) return [];
   const map = headerMap(rows[idx]);
   const cData = col(map,['Data']);
+  const cDesc = col(map,['DESCRIÇÃO','DESCRICAO','Descrição','Descricao']);
   const cItem = col(map,['Item']);
-  const cDesc = col(map,['Descrição','Descricao','Histórico','Historico','Observação','Observacao']);
   const cGrupo = col(map,['Grupo']);
-  const cEnt = col(map,['ENTIDADE','Entidade']);
+  const cEnt = col(map,['ENTIDADE','Entidade','Fornecedor']);
   const cTotal = col(map,['TOTAL','Total']);
   const cPagar = col(map,['Valor a Pagar']);
   const cForma = col(map,['Forma de pgto','Forma de pagamento']);
@@ -396,79 +386,110 @@ function parseDespesas(rows){
   const out=[];
   for(let i=idx+1;i<rows.length;i++){
     const row=rows[i];
+    const desc = String(val(row,cDesc) ?? '').trim();
     const item = String(val(row,cItem) ?? '').trim();
-    const descricao = String(val(row,cDesc) ?? '').trim();
     const total = toNumber(val(row,cTotal));
     const pagar = toNumber(val(row,cPagar));
-    if(!item && !total && !pagar) continue;
+    if(!desc && !item && !total && !pagar) continue;
     const status = normalize(val(row,cStatus)).includes('PAGO') ? 'PAGO' : (pagar > 0 ? 'A PAGAR' : 'PAGO');
     const valorSaida = status === 'PAGO' ? (total || pagar) : (pagar || total);
     const data = excelDateToJS(val(row,cDataPagar)) || excelDateToJS(val(row,cData));
     if(!data || !valorSaida) continue;
     out.push({
-      data, tipo:'saida', descricao:descricao || item || 'Despesa', grupo:String(val(row,cGrupo)??'Despesas').trim() || 'Despesas', entidade:String(val(row,cEnt)??'').trim(), status, entrada:0, saida:valorSaida, bruto:0, imposto:0, forma:String(val(row,cForma)??'').trim(), origem:'Despesas'
+      data,
+      tipo:'saida',
+      descricao: desc || item || 'Despesa',
+      grupo:String(val(row,cGrupo)??'Despesas').trim() || 'Despesas',
+      entidade:String(val(row,cEnt)??'').trim() || '-',
+      status,
+      entrada:0,
+      saida:valorSaida,
+      bruto:0,
+      imposto:0,
+      forma:String(val(row,cForma)??'').trim(),
+      origem:'Despesas'
     });
   }
   return out;
 }
-function buildFilters(){
-  const years = [...new Set(allRows.map(r=>yearNum(r.data)).filter(Boolean))].sort((a,b)=>b-a);
-  const y = document.getElementById('yearFilter'); y.innerHTML = '<option value="todos">Todos</option>' + years.map(v=>`<option value="${v}">${v}</option>`).join('');
-  if(years.length) y.value = years[0];
-  const m = document.getElementById('monthFilter'); m.innerHTML = '<option value="todos">Todos</option>' + meses.map((v,i)=>`<option value="${i}">${v.charAt(0).toUpperCase()+v.slice(1)}</option>`).join('');
-  const now = new Date();
-  if(years.includes(now.getFullYear())) { y.value = now.getFullYear(); m.value = now.getMonth(); }
+function buildDateFilters(){
+  if(!allRows.length) return;
+  baseMinDate = dateKey(allRows[0].data);
+  baseMaxDate = dateKey(allRows[allRows.length-1].data);
+  document.getElementById('startDateFilter').value = baseMinDate;
+  document.getElementById('endDateFilter').value = baseMaxDate;
 }
-function filteredRows(){
-  const y = document.getElementById('yearFilter').value;
-  const m = document.getElementById('monthFilter').value;
+function getPeriod(){
+  let start = document.getElementById('startDateFilter').value || baseMinDate;
+  let end = document.getElementById('endDateFilter').value || baseMaxDate;
+  if(start && end && start > end){ const tmp=start; start=end; end=tmp; }
+  return {start, end, startDate:jsDateFromKey(start), endDate:jsDateFromKey(end)};
+}
+function rowsInPeriod(applyTextFilters=true){
+  const {start, end} = getPeriod();
   const t = document.getElementById('typeFilter').value;
   const s = document.getElementById('statusFilter').value;
   const q = normalize(document.getElementById('searchFilter').value);
   return allRows.filter(r=>{
-    if(y !== 'todos' && String(yearNum(r.data)) !== y) return false;
-    if(m !== 'todos' && String(r.data.getUTCMonth()) !== m) return false;
-    if(t !== 'todos' && r.tipo !== t) return false;
-    if(s !== 'todos' && r.status !== s) return false;
-    if(q){
-      const txt = normalize([r.descricao,r.grupo,r.entidade,r.status,r.origem].join(' '));
-      if(!txt.includes(q)) return false;
+    const k = dateKey(r.data);
+    if(start && k < start) return false;
+    if(end && k > end) return false;
+    if(applyTextFilters){
+      if(t !== 'todos' && r.tipo !== t) return false;
+      if(s !== 'todos' && r.status !== s) return false;
+      if(q){
+        const txt = normalize([r.descricao,r.grupo,r.entidade,r.status,r.origem,r.nf].join(' '));
+        if(!txt.includes(q)) return false;
+      }
     }
     return true;
   }).sort((a,b)=> a.data-b.data || (a.tipo==='entrada'?-1:1));
 }
-function render(){
-  const rows = filteredRows();
+function balanceBeforePeriod(){
+  const {start} = getPeriod();
   const opening = toNumber(document.getElementById('openingBalance').value);
-  const entrada = rows.reduce((s,r)=>s+r.entrada,0);
-  const saida = rows.reduce((s,r)=>s+r.saida,0);
-  const bruto = rows.reduce((s,r)=>s+(r.bruto||0),0);
-  const imp = rows.reduce((s,r)=>s+(r.imposto||0),0);
-  const pagar = rows.filter(r=>r.tipo==='saida' && r.status==='A PAGAR').reduce((s,r)=>s+r.saida,0);
-  const pago = rows.filter(r=>r.tipo==='saida' && r.status==='PAGO').reduce((s,r)=>s+r.saida,0);
-  const saldo = entrada - saida;
-  const acumulado = opening + saldo;
+  if(!start) return opening;
+  return opening + allRows.filter(r=>dateKey(r.data) < start).reduce((s,r)=>s+r.entrada-r.saida,0);
+}
+function render(){
+  if(!allRows.length) return;
+  const rows = rowsInPeriod(true);
+  const periodAllRows = rowsInPeriod(false);
+  const saldoAnterior = balanceBeforePeriod();
+  const entrada = periodAllRows.reduce((s,r)=>s+r.entrada,0);
+  const saida = periodAllRows.reduce((s,r)=>s+r.saida,0);
+  const bruto = periodAllRows.reduce((s,r)=>s+(r.bruto||0),0);
+  const imp = periodAllRows.reduce((s,r)=>s+(r.imposto||0),0);
+  const pagar = periodAllRows.filter(r=>r.tipo==='saida' && r.status==='A PAGAR').reduce((s,r)=>s+r.saida,0);
+  const pago = periodAllRows.filter(r=>r.tipo==='saida' && r.status==='PAGO').reduce((s,r)=>s+r.saida,0);
+  const saldoPeriodo = entrada - saida;
+  const saldoFinal = saldoAnterior + saldoPeriodo;
+  setText('kpiAnterior', fmtBRL.format(saldoAnterior));
   setText('kpiEntradas', fmtBRL.format(entrada));
   setText('kpiSaidas', fmtBRL.format(saida));
-  setText('kpiSaldo', fmtBRL.format(saldo));
-  setText('kpiPagar', fmtBRL.format(pagar));
+  setText('kpiFinal', fmtBRL.format(saldoFinal));
   setText('miniBruta', fmtBRL.format(bruto));
   setText('miniImpostos', fmtBRL.format(imp));
   setText('miniPago', fmtBRL.format(pago));
-  setText('miniAcumulado', fmtBRL.format(acumulado));
-  document.getElementById('kpiSaldo').style.color = saldo >= 0 ? 'var(--lime)' : 'var(--red)';
-  document.getElementById('miniAcumulado').style.color = acumulado >= 0 ? 'var(--lime)' : 'var(--red)';
+  setText('miniAcumulado', fmtBRL.format(saldoFinal));
+  document.getElementById('kpiAnterior').style.color = saldoAnterior >= 0 ? 'var(--lime)' : 'var(--red)';
+  document.getElementById('kpiFinal').style.color = saldoFinal >= 0 ? 'var(--lime)' : 'var(--red)';
+  document.getElementById('miniAcumulado').style.color = saldoFinal >= 0 ? 'var(--lime)' : 'var(--red)';
   document.getElementById('tableCount').textContent = rows.length + (rows.length === 1 ? ' registro' : ' registros');
-  renderTable(rows, opening);
-  renderChart(rows);
-  renderInsight(rows, entrada, saida, saldo, pagar, pago);
+  renderTable(rows, saldoAnterior);
+  renderChart(periodAllRows);
+  renderInsight(periodAllRows, entrada, saida, saldoPeriodo, pagar, pago, saldoAnterior, saldoFinal);
 }
-function setText(id,v){document.getElementById(id).textContent=v;}
-function renderTable(rows, opening){
+function setText(id,v){const el=document.getElementById(id); if(el) el.textContent=v;}
+function renderTable(rows, saldoAnterior){
   const tb = document.getElementById('cashTable');
-  if(!rows.length){ tb.innerHTML = '<tr><td colspan="10" class="empty">Nenhum registro encontrado para o filtro selecionado.</td></tr>'; return; }
-  let acum = opening;
-  tb.innerHTML = rows.map(r=>{
+  let acum = saldoAnterior;
+  const openingRow = `<tr class="balanceRow"><td colspan="9">Saldo anterior ao período</td><td class="num" style="color:${acum>=0?'var(--lime)':'var(--red)'}">${fmtBRL.format(acum)}</td></tr>`;
+  if(!rows.length){
+    tb.innerHTML = openingRow + `<tr><td colspan="9" class="empty">Nenhuma movimentação encontrada para o filtro selecionado.</td><td class="num">${fmtBRL.format(acum)}</td></tr>` + `<tr class="finalRow"><td colspan="9">Saldo final do período</td><td class="num" style="color:${acum>=0?'var(--lime)':'var(--red)'}">${fmtBRL.format(acum)}</td></tr>`;
+    return;
+  }
+  const body = rows.map(r=>{
     const mov = r.entrada - r.saida; acum += mov;
     return `<tr>
       <td>${fmtDate.format(r.data)}</td>
@@ -483,6 +504,7 @@ function renderTable(rows, opening){
       <td class="num" style="color:${acum>=0?'var(--lime)':'var(--red)'}">${fmtBRL.format(acum)}</td>
     </tr>`;
   }).join('');
+  tb.innerHTML = openingRow + body + `<tr class="finalRow"><td colspan="9">Saldo final do período</td><td class="num" style="color:${acum>=0?'var(--lime)':'var(--red)'}">${fmtBRL.format(acum)}</td></tr>`;
 }
 function renderChart(rows){
   const byDate = new Map();
@@ -502,26 +524,34 @@ function renderChart(rows){
     {label:'Saldo diário',data:saldo,type:'line',tension:.35,borderWidth:3,pointRadius:3,borderColor:'rgba(0,229,255,.95)',backgroundColor:'rgba(0,229,255,.12)'}
   ]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{labels:{color:'#CBD5E1'}},tooltip:{callbacks:{label:(c)=>`${c.dataset.label}: ${fmtBRL.format(c.raw)}`}}},scales:{x:{ticks:{color:'#94A3B8',maxRotation:0,autoSkip:true},grid:{color:'rgba(148,163,184,.10)'}},y:{ticks:{color:'#94A3B8',callback:v=>fmtBRL.format(v)},grid:{color:'rgba(148,163,184,.12)'}}}}});
 }
-function renderInsight(rows, entrada, saida, saldo, pagar, pago){
+function renderInsight(rows, entrada, saida, saldo, pagar, pago, saldoAnterior, saldoFinal){
   const days = new Set(rows.map(r=>dateKey(r.data))).size || 1;
   const avgIn = entrada/days, avgOut = saida/days;
   const text = saldo >= 0
-    ? `No filtro atual, o caixa ficou positivo em ${fmtBRL.format(saldo)}. A entrada média diária foi de ${fmtBRL.format(avgIn)} e a saída média diária foi de ${fmtBRL.format(avgOut)}.`
-    : `No filtro atual, o caixa ficou negativo em ${fmtBRL.format(Math.abs(saldo))}. O ponto de atenção é reduzir saídas ou antecipar receitas para cobrir o período.`;
-  const pend = pagar > 0 ? ` Há ainda ${fmtBRL.format(pagar)} em contas a pagar.` : ` Não há contas pendentes no filtro atual.`;
-  document.getElementById('insightBox').textContent = text + pend;
+    ? `No período, o movimento do caixa ficou positivo em ${fmtBRL.format(saldo)}. O saldo anterior era ${fmtBRL.format(saldoAnterior)} e o saldo final ficou em ${fmtBRL.format(saldoFinal)}.`
+    : `No período, o movimento do caixa ficou negativo em ${fmtBRL.format(Math.abs(saldo))}. O saldo anterior era ${fmtBRL.format(saldoAnterior)} e o saldo final ficou em ${fmtBRL.format(saldoFinal)}.`;
+  const media = ` Entrada média diária: ${fmtBRL.format(avgIn)}. Saída média diária: ${fmtBRL.format(avgOut)}.`;
+  const pend = pagar > 0 ? ` Há ainda ${fmtBRL.format(pagar)} em contas a pagar.` : ` Não há contas pendentes no período.`;
+  document.getElementById('insightBox').textContent = text + media + pend;
 }
 function resetFilters(){
+  document.getElementById('startDateFilter').value = baseMinDate;
+  document.getElementById('endDateFilter').value = baseMaxDate;
   ['typeFilter','statusFilter'].forEach(id=>document.getElementById(id).value='todos');
   document.getElementById('searchFilter').value='';
   render();
 }
 function exportCSV(){
-  const rows = filteredRows();
+  const rows = rowsInPeriod(true);
+  const saldoAnterior = balanceBeforePeriod();
   const header = ['Data','Tipo','Descrição','Grupo','Entidade/NF','Status','Entrada','Saída'];
-  const lines = [header.join(';')].concat(rows.map(r=>[
+  const lines = [['Saldo anterior ao período','','','','','','',saldoAnterior.toFixed(2).replace('.',',')].map(x=>'"'+String(x??'').replace(/"/g,'""')+'"').join(';')];
+  lines.unshift(header.join(';'));
+  lines.push(...rows.map(r=>[
     fmtDate.format(r.data), r.tipo, r.descricao, r.grupo, r.entidade, r.status, r.entrada.toFixed(2).replace('.',','), r.saida.toFixed(2).replace('.',',')
   ].map(x=>'"'+String(x??'').replace(/"/g,'""')+'"').join(';')));
+  const saldoFinal = saldoAnterior + rows.reduce((s,r)=>s+r.entrada-r.saida,0);
+  lines.push(['Saldo final do período','','','','','','',saldoFinal.toFixed(2).replace('.',',')].map(x=>'"'+String(x??'').replace(/"/g,'""')+'"').join(';'));
   const blob = new Blob([lines.join('\n')], {type:'text/csv;charset=utf-8'});
   const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'livro_caixa_nvs.csv'; a.click(); URL.revokeObjectURL(a.href);
 }
