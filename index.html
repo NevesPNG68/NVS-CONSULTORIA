@@ -3,11 +3,11 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>NVS Consultoria Empresarial | Livro Caixa</title>
+<title>NVS Consultoria Empresarial | Fluxo de Caixa</title>
 
 <!--
 ============================================================
-NVS CONSULTORIA EMPRESARIAL — LIVRO CAIXA MODERNO
+NVS CONSULTORIA EMPRESARIAL — FLUXO DE CAIXA MODERNO
 ============================================================
 Como usar no GitHub Pages:
 1) Suba este arquivo HTML para o repositório.
@@ -357,8 +357,7 @@ tr.finalRow td{background:rgba(57,255,20,.07);font-weight:950;border-top:1px sol
         </div>
         <div class="heroCopy">
           <div class="eyebrow">Consultoria Empresarial</div>
-          <h1>Livro Caixa NVS</h1>
-          <p class="subtitle">Controle de receitas, despesas, notas fiscais, status e saldo acumulado.</p>
+          <h1>Fluxo de Caixa NVS</h1>
         </div>
       </div>
     </div>
@@ -367,8 +366,8 @@ tr.finalRow td{background:rgba(57,255,20,.07);font-weight:950;border-top:1px sol
   <section class="panel">
     <div class="panelHeader">
       <div>
-        <h2>Filtros do livro caixa</h2>
-        <div class="muted">Por padrão, o relatório abre desde a menor data da base até a última movimentação.</div>
+        <h2>Filtros do fluxo de caixa</h2>
+        <div class="muted">Por padrão, o relatório abre no mês corrente.</div>
       </div>
       <div class="actions topActions">
         <button class="btn secondary" onclick="resetFilters()">↻ Limpar filtros</button>
@@ -401,17 +400,16 @@ tr.finalRow td{background:rgba(57,255,20,.07);font-weight:950;border-top:1px sol
       <div class="panelHeader"><div><h2>Resumo executivo</h2><div class="muted">Leitura rápida do período filtrado.</div></div></div>
       <div class="monthCard">
         <div class="mini"><div class="k">Receita bruta</div><div class="v" id="miniBruta">R$ 0,00</div></div>
-        <div class="mini"><div class="k">Impostos</div><div class="v" id="miniImpostos">R$ 0,00</div></div>
+        <div class="mini"><div class="k">Saídas</div><div class="v" id="miniSaidas">R$ 0,00</div></div>
         <div class="mini"><div class="k">Já pago</div><div class="v" id="miniPago">R$ 0,00</div></div>
         <div class="mini"><div class="k">Saldo acumulado</div><div class="v" id="miniAcumulado">R$ 0,00</div></div>
       </div>
-      <div class="notice" id="insightBox">Aguardando leitura dos dados.</div>
     </div>
   </section>
 
   <section class="panel">
     <div class="panelHeader">
-      <div><h2>Livro caixa detalhado</h2><div class="muted">Movimentações consolidadas por data, com origem, grupo, status e saldo acumulado.</div></div>
+      <div><h2>Fluxo de caixa detalhado</h2><div class="muted">Movimentações consolidadas por data, com origem, grupo, status e saldo acumulado.</div></div>
       <div class="muted" id="tableCount">0 registros</div>
     </div>
     <div class="tableWrap">
@@ -673,7 +671,6 @@ function render(){
   const entrada = periodAllRows.reduce((s,r)=>s+r.entrada,0);
   const saida = periodAllRows.reduce((s,r)=>s+r.saida,0);
   const bruto = periodAllRows.reduce((s,r)=>s+(r.bruto||0),0);
-  const imp = periodAllRows.reduce((s,r)=>s+(r.imposto||0),0);
   const pagar = periodAllRows.filter(r=>r.tipo==='saida' && r.status==='A PAGAR').reduce((s,r)=>s+r.saida,0);
   const pago = periodAllRows.filter(r=>r.tipo==='saida' && r.status==='PAGO').reduce((s,r)=>s+r.saida,0);
   const saldoPeriodo = entrada - saida;
@@ -683,7 +680,7 @@ function render(){
   setText('kpiSaidas', fmtBRL.format(saida));
   setText('kpiFinal', fmtBRL.format(saldoFinal));
   setText('miniBruta', fmtBRL.format(bruto));
-  setText('miniImpostos', fmtBRL.format(imp));
+  setText('miniSaidas', fmtBRL.format(saida));
   setText('miniPago', fmtBRL.format(pago));
   setText('miniAcumulado', fmtBRL.format(saldoFinal));
   document.getElementById('kpiAnterior').style.color = saldoAnterior >= 0 ? 'var(--lime)' : 'var(--red)';
@@ -754,7 +751,8 @@ function renderInsight(rows, entrada, saida, saldo, pagar, pago, saldoAnterior, 
     : `No período, o movimento do caixa ficou negativo em ${fmtBRL.format(Math.abs(saldo))}. O saldo anterior era ${fmtBRL.format(saldoAnterior)} e o saldo final ficou em ${fmtBRL.format(saldoFinal)}.`;
   const media = ` Entrada média diária: ${fmtBRL.format(avgIn)}. Saída média diária: ${fmtBRL.format(avgOut)}.`;
   const pend = pagar > 0 ? ` Há ainda ${fmtBRL.format(pagar)} em contas a pagar.` : ` Não há contas pendentes no período.`;
-  document.getElementById('insightBox').textContent = text + media + pend;
+  const insightEl = document.getElementById('insightBox');
+  if(insightEl) insightEl.textContent = text + media + pend;
 }
 function resetFilters(){
   const month = currentMonthRange();
@@ -778,7 +776,7 @@ function exportCSV(){
   const saldoFinal = saldoAnterior + rows.reduce((s,r)=>s+r.entrada-r.saida,0);
   lines.push(['Saldo final do período','','','','','','',saldoFinal.toFixed(2).replace('.',',')].map(x=>'"'+String(x??'').replace(/"/g,'""')+'"').join(';'));
   const blob = new Blob([lines.join('\n')], {type:'text/csv;charset=utf-8'});
-  const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'livro_caixa_nvs.csv'; a.click(); URL.revokeObjectURL(a.href);
+  const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'fluxo_caixa_nvs.csv'; a.click(); URL.revokeObjectURL(a.href);
 }
 function escapeHTML(s){return String(s??'').replace(/[&<>'"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c]));}
 
