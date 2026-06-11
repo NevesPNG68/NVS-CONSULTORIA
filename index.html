@@ -345,6 +345,53 @@ tr.finalRow td{background:rgba(57,255,20,.07);font-weight:950;border-top:1px sol
   box-shadow:none!important;
 }
 
+
+
+/* ============================================================
+   AJUSTES — RESUMO EXECUTIVO E TABELA DO FLUXO DETALHADO
+   ============================================================ */
+#miniPagar{
+  color:var(--orange);
+}
+#cashTable tr{
+  transition:background .18s ease, box-shadow .18s ease, transform .18s ease, filter .18s ease;
+}
+#cashTable tr td{
+  transition:background .18s ease, box-shadow .18s ease, color .18s ease, text-shadow .18s ease;
+}
+#cashTable tr.rowPaid td{
+  background:linear-gradient(90deg, rgba(57,255,20,.20), rgba(0,229,255,.10))!important;
+  border-bottom:1px solid rgba(57,255,20,.36)!important;
+}
+#cashTable tr.rowPaid td:first-child{
+  box-shadow:inset 5px 0 0 rgba(57,255,20,.92);
+}
+#cashTable tr:hover td,
+#cashTable tr.touch-row td{
+  background:linear-gradient(90deg, rgba(0,229,255,.20), rgba(168,85,247,.16))!important;
+  color:#FFFFFF;
+  text-shadow:0 0 10px rgba(255,255,255,.18);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.08), inset 0 -1px 0 rgba(0,229,255,.45);
+}
+#cashTable tr.rowPaid:hover td,
+#cashTable tr.rowPaid.touch-row td{
+  background:linear-gradient(90deg, rgba(57,255,20,.34), rgba(0,229,255,.24))!important;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.10), inset 0 -1px 0 rgba(57,255,20,.58);
+}
+#cashTable tr:hover td:first-child,
+#cashTable tr.touch-row td:first-child{
+  box-shadow:inset 5px 0 0 rgba(0,229,255,.95), inset 0 1px 0 rgba(255,255,255,.08), inset 0 -1px 0 rgba(0,229,255,.45);
+}
+#cashTable tr.rowPaid:hover td:first-child,
+#cashTable tr.rowPaid.touch-row td:first-child{
+  box-shadow:inset 5px 0 0 rgba(57,255,20,1), inset 0 1px 0 rgba(255,255,255,.10), inset 0 -1px 0 rgba(57,255,20,.58);
+}
+#cashTable tr:hover .pill,
+#cashTable tr.touch-row .pill{
+  filter:brightness(1.18);
+  box-shadow:0 0 14px rgba(0,229,255,.18);
+}
+
 </style>
 </head>
 <body>
@@ -402,7 +449,7 @@ tr.finalRow td{background:rgba(57,255,20,.07);font-weight:950;border-top:1px sol
         <div class="mini"><div class="k">Receita bruta</div><div class="v" id="miniBruta">R$ 0,00</div></div>
         <div class="mini"><div class="k">Saídas</div><div class="v" id="miniSaidas">R$ 0,00</div></div>
         <div class="mini"><div class="k">Já pago</div><div class="v" id="miniPago">R$ 0,00</div></div>
-        <div class="mini"><div class="k">Saldo acumulado</div><div class="v" id="miniAcumulado">R$ 0,00</div></div>
+        <div class="mini"><div class="k">Valor a pagar</div><div class="v" id="miniPagar">R$ 0,00</div></div>
       </div>
     </div>
   </section>
@@ -679,13 +726,18 @@ function render(){
   setText('kpiEntradas', fmtBRL.format(entrada));
   setText('kpiSaidas', fmtBRL.format(saida));
   setText('kpiFinal', fmtBRL.format(saldoFinal));
-  setText('miniBruta', fmtBRL.format(bruto));
-  setText('miniSaidas', fmtBRL.format(saida));
-  setText('miniPago', fmtBRL.format(pago));
-  setText('miniAcumulado', fmtBRL.format(saldoFinal));
+  // Resumo executivo: respeita todos os filtros aplicados, inclusive tipo, status e busca.
+  const resumoBruta = rows.reduce((s,r)=>s+(r.bruto||0),0);
+  const resumoSaidas = rows.reduce((s,r)=>s+r.saida,0);
+  const resumoPago = rows.filter(r=>r.tipo==='saida' && r.status==='PAGO').reduce((s,r)=>s+r.saida,0);
+  const resumoPagar = rows.filter(r=>r.tipo==='saida' && r.status==='A PAGAR').reduce((s,r)=>s+r.saida,0);
+  setText('miniBruta', fmtBRL.format(resumoBruta));
+  setText('miniSaidas', fmtBRL.format(resumoSaidas));
+  setText('miniPago', fmtBRL.format(resumoPago));
+  setText('miniPagar', fmtBRL.format(resumoPagar));
   document.getElementById('kpiAnterior').style.color = saldoAnterior >= 0 ? 'var(--lime)' : 'var(--red)';
   document.getElementById('kpiFinal').style.color = saldoFinal >= 0 ? 'var(--lime)' : 'var(--red)';
-  document.getElementById('miniAcumulado').style.color = saldoFinal >= 0 ? 'var(--lime)' : 'var(--red)';
+  document.getElementById('miniPagar').style.color = resumoPagar > 0 ? 'var(--orange)' : 'var(--lime)';
   document.getElementById('tableCount').textContent = rows.length + (rows.length === 1 ? ' registro' : ' registros');
   renderTable(rows, saldoAnterior);
   renderChart(periodAllRows, saldoAnterior);
@@ -702,7 +754,8 @@ function renderTable(rows, saldoAnterior){
   }
   const body = rows.map(r=>{
     const mov = r.entrada - r.saida; acum += mov;
-    return `<tr>
+    const rowClass = r.status === 'PAGO' ? ' class="rowPaid"' : '';
+    return `<tr${rowClass}>
       <td>${fmtDate.format(r.data)}</td>
       <td><span class="pill ${r.tipo==='entrada'?'in':'out'}">${r.tipo==='entrada'?'Entrada':'Saída'}</span></td>
       <td>${escapeHTML(r.descricao)}</td>
@@ -798,6 +851,28 @@ function escapeHTML(s){return String(s??'').replace(/[&<>'"]/g,c=>({'&':'&amp;',
     const el = e.target.closest(selector);
     if(el) el.classList.remove('touch-glow');
   }, {passive:true});
+
+})();
+
+// Realce das linhas da tabela também em telas de toque.
+(function(){
+  const tb = document.getElementById('cashTable');
+  if(!tb) return;
+  function clearRows(){
+    tb.querySelectorAll('tr.touch-row').forEach(function(row){ row.classList.remove('touch-row'); });
+  }
+  tb.addEventListener('pointerdown', function(e){
+    const row = e.target.closest('tr');
+    if(!row) return;
+    clearRows();
+    row.classList.add('touch-row');
+  }, {passive:true});
+  tb.addEventListener('pointerup', function(e){
+    const row = e.target.closest('tr');
+    if(row) setTimeout(function(){ row.classList.remove('touch-row'); }, 700);
+  }, {passive:true});
+  tb.addEventListener('pointercancel', clearRows, {passive:true});
+  tb.addEventListener('mouseleave', clearRows, {passive:true});
 })();
 
 loadFromUrl();
