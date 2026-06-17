@@ -410,6 +410,7 @@ tr.finalRow td{background:rgba(57,255,20,.07);font-weight:950;border-top:1px sol
 .profitSummaryGrid .mini:nth-child(4){--edge-rgb:168,85,247;}
 #profitControlTable tr td{transition:background .18s ease, color .18s ease, box-shadow .18s ease;}
 #profitControlTable tr.profitPositive td:first-child{box-shadow:inset 5px 0 0 rgba(57,255,20,.92);}
+#profitControlTable tr.profitPositive td{background:linear-gradient(90deg, rgba(57,255,20,.30), rgba(0,229,255,.12))!important;color:#FFFFFF;}
 #profitControlTable tr.profitNegative td:first-child{box-shadow:inset 5px 0 0 rgba(251,54,93,.92);}
 #profitControlTable tr:hover td,
 #profitControlTable tr.touch-row td{
@@ -443,7 +444,7 @@ tr.finalRow td{background:rgba(57,255,20,.07);font-weight:950;border-top:1px sol
   background:rgba(57,255,20,.035);
 }
 @media(max-width:980px){.profitSummaryGrid{grid-template-columns:repeat(2,1fr)}}
-@media(max-width:560px){.profitSummaryGrid{grid-template-columns:1fr}#profitControlTableWrap{min-width:1120px}}
+@media(max-width:560px){.profitSummaryGrid{grid-template-columns:1fr}#profitControlTable{min-width:980px}}
 
 </style>
 </head>
@@ -512,7 +513,7 @@ tr.finalRow td{background:rgba(57,255,20,.07);font-weight:950;border-top:1px sol
     <div class="panelHeader">
       <div>
         <h2>Controle de lucro a distribuir</h2>
-        <div class="muted">Demonstrativo mensal conforme a aba Controle de Lucro: o saldo de cada competência compõe o acumulado mês a mês. O D.L. permanece abatendo somente quando estiver lançado como pago na aba Despesas.</div>
+        <div class="muted">Faturamento menos INSS, pró-labore, DAS, demais gastos e D.L. pago. O D.L. só abate o saldo quando estiver lançado como pago na aba Despesas.</div>
       </div>
       <div class="muted" id="profitControlCount">0 competências</div>
     </div>
@@ -520,7 +521,7 @@ tr.finalRow td{background:rgba(57,255,20,.07);font-weight:950;border-top:1px sol
     <div class="profitSummaryGrid">
       <div class="mini"><div class="k">Lucro gerado antes da D.L.</div><div class="v" id="profitGenerated">R$ 0,00</div></div>
       <div class="mini"><div class="k">D.L. pago</div><div class="v" id="profitPaid">R$ 0,00</div></div>
-      <div class="mini"><div class="k">Saldo a distribuir</div><div class="v" id="profitAvailable">R$ 0,00</div></div>
+      <div class="mini"><div class="k">Saldo acumulado</div><div class="v" id="profitAvailable">R$ 0,00</div></div>
       <div class="mini"><div class="k">Competências positivas</div><div class="v" id="profitPositiveMonths">0</div></div>
     </div>
 
@@ -528,7 +529,7 @@ tr.finalRow td{background:rgba(57,255,20,.07);font-weight:950;border-top:1px sol
       <table id="profitControlTableWrap">
         <thead>
           <tr>
-            <th>Competência</th><th>Faturamento</th><th>INSS</th><th>Pró-labore</th><th>DAS</th><th>D.L. pago</th><th>Demais gastos</th><th>Saldo</th><th>Acumulado</th>
+            <th>Competência</th><th>Faturamento</th><th>INSS</th><th>Pró-labore</th><th>DAS</th><th>DL Pagos</th><th>Demais gastos</th><th>Saldo</th><th>Acumulado</th>
           </tr>
         </thead>
         <tbody id="profitControlTable"><tr><td colspan="9" class="empty">Carregando controle...</td></tr></tbody>
@@ -654,7 +655,7 @@ function setStatus(detail){
 function processWorkbook(workbook){
   const recSheet = findSheet(workbook, ['Receitas','Receita']);
   const despSheet = findSheet(workbook, ['Despesas','Despesa']);
-  const controlSheet = findSheet(workbook, ['Controle Distr. Lucro','Controle Distr','Controle de Lucro','Lucro']);
+  const controlSheet = findSheet(workbook, ['Controle Distr. Lucro','Controle Distr','Controle de Lucro','Controle Lucro','Lucro']);
   if(!recSheet || !despSheet){
     setStatus('Erro: não localizei as abas de Receita e Despesa na planilha.');
     return;
@@ -774,13 +775,15 @@ function parseControleLucro(rows){
   const cDas = firstExistingCol(map, ['DAS']);
   const cDL = firstExistingCol(map, ['DL Pagos','D.L. Pago','DL Pago','Lucros Distribuídos','Lucros Distribuidos']);
   const cDemais = firstExistingCol(map, ['Demais gastos','Demais Gastos']);
-  const cSaldo = firstExistingCol(map, ['Saldo']);
+  const cSaldo = firstExistingCol(map, ['Saldo','Saldo a distribuir']);
   const cAcum = firstExistingCol(map, ['Acumulado']);
   const cBase = firstExistingCol(map, ['Data base','Data Base']);
   const out = [];
   for(let i=idx+1; i<rows.length; i++){
     const row = rows[i];
     const competencia = String(val(row,cComp) ?? '').trim();
+    if(!competencia) continue;
+    if(normalize(competencia).includes('TOTAL')) continue;
     const faturamento = toNumber(val(row,cFat));
     const inss = toNumber(val(row,cInss));
     const prolabore = toNumber(val(row,cPro));
@@ -790,10 +793,8 @@ function parseControleLucro(rows){
     const saldo = toNumber(val(row,cSaldo));
     const acumulado = toNumber(val(row,cAcum));
     const base = excelDateToJS(val(row,cBase));
-    const temValor = faturamento || inss || prolabore || das || dlPago || demais || saldo || acumulado;
-    if(!competencia && !temValor) continue;
-    if(!competencia) continue;
-    if(normalize(competencia).includes('TOTAL')) continue;
+    const temLinha = competencia || faturamento || inss || prolabore || das || dlPago || demais || saldo || acumulado;
+    if(!temLinha) continue;
     out.push({
       competencia,
       faturamento,
@@ -971,25 +972,24 @@ function isDLExpense(r){
 }
 function isPaidExpense(r){return r.status === 'PAGO';}
 function getControlMonths(){
-  // O controle de lucro não acompanha o filtro mensal do fluxo de caixa.
-  // Ele deve mostrar a sequência de competências como na aba Controle Distr. Lucro,
-  // carregando o saldo acumulado mês a mês.
-  let s = null;
-  const competenciaDates = allRows
-    .map(r => r.competenciaDate || r.data)
-    .filter(Boolean)
-    .sort((a,b)=>a-b);
-  if(competenciaDates.length) s = monthStartUTC(competenciaDates[0]);
-  else if(baseMinDate) s = monthStartUTC(jsDateFromKey(baseMinDate));
-  if(!s) return [];
+  let {start, end} = getPeriod();
+  if(start && end && start > end){ const tmp=start; start=end; end=tmp; }
+  let s = start ? jsDateFromKey(start) : (baseMinDate ? jsDateFromKey(baseMinDate) : null);
+  let e = end ? jsDateFromKey(end) : (baseMaxDate ? jsDateFromKey(baseMaxDate) : s);
+  if(!s || !e) return [];
+  s = monthStartUTC(s);
+  e = monthStartUTC(e);
   const months = [];
-  for(let d=s, guard=0; guard<24; d=addMonthsUTC(d,1), guard++) months.push(d);
+  for(let d=s, guard=0; d<=e && guard<120; d=addMonthsUTC(d,1), guard++) months.push(d);
   return months;
 }
 function buildProfitControlRows(){
+  // Regra principal: quando existir a aba "Controle Distr. Lucro",
+  // o HTML deve espelhar a planilha, competência por competência.
   if(controlLucroRows && controlLucroRows.length){
     return controlLucroRows;
   }
+  // Fallback: mantém a regra anterior caso a aba não exista.
   const months = getControlMonths();
   let acumulado = 0;
   return months.map(month=>{
@@ -1010,14 +1010,15 @@ function buildProfitControlRows(){
     const lucroAntesDL = faturamento - inss - prolabore - das - demais;
     const saldo = lucroAntesDL - dlPago;
     acumulado += saldo;
-    const movimento = Boolean(faturamento || inss || prolabore || das || dlPago || dlPendente || demais || Math.abs(acumulado) > 0.004);
+    const movimento = faturamento || inss || prolabore || das || dlPago || dlPendente || demais || Math.abs(acumulado) > 0.004;
     return {month, competencia:monthLabelBR(month), faturamento, inss, prolabore, das, dlPago, dlPendente, demais, lucroAntesDL, saldo, acumulado, movimento};
   });
 }
 function renderProfitControl(){
   const tb = document.getElementById('profitControlTable');
   if(!tb) return;
-  const rows = buildProfitControlRows().filter(r=>r.movimento);
+  const rawRows = buildProfitControlRows();
+  const rows = (controlLucroRows && controlLucroRows.length) ? rawRows : rawRows.filter(r=>r.movimento);
   const totalLucroAntesDL = rows.reduce((s,r)=>s+r.lucroAntesDL,0);
   const totalDLPago = rows.reduce((s,r)=>s+r.dlPago,0);
   const totalSaldo = rows.length ? rows[rows.length - 1].acumulado : 0;
@@ -1034,16 +1035,16 @@ function renderProfitControl(){
   if(paidEl) paidEl.style.color = totalDLPago > 0 ? 'var(--lime)' : 'var(--muted)';
 
   if(!rows.length){
-    tb.innerHTML = '<tr><td colspan="9" class="empty">Nenhuma competência encontrada para o período selecionado.</td></tr>';
+    tb.innerHTML = '<tr><td colspan="9" class="empty">Nenhuma competência encontrada no controle de lucro.</td></tr>';
     return;
   }
   tb.innerHTML = rows.map(r=>{
-    const cls = r.acumulado >= 0 ? 'profitPositive' : 'profitNegative';
+    const cls = r.acumulado > 0 ? 'profitPositive' : (r.acumulado < 0 ? 'profitNegative' : '');
     const dlHtml = r.dlPago > 0
       ? `<span class="dlCheck">✓ ${fmtBRL.format(r.dlPago)}</span>${r.dlPendente>0?`<div class="dlPending">A pagar: ${fmtBRL.format(r.dlPendente)}</div>`:''}`
-      : (r.dlPendente > 0 ? `<span class="pill warn">A pagar</span><div class="dlPending">${fmtBRL.format(r.dlPendente)} não abatido</div>` : '-');
+      : (r.dlPendente > 0 ? `<span class="pill warn">A pagar</span><div class="dlPending">${fmtBRL.format(r.dlPendente)} não abatido</div>` : fmtBRL.format(0));
     return `<tr class="${cls}">
-      <td><b>${r.competencia}</b></td>
+      <td><b>${escapeHTML(r.competencia)}</b></td>
       <td class="num">${fmtBRL.format(r.faturamento)}</td>
       <td class="num">${fmtBRL.format(r.inss)}</td>
       <td class="num">${fmtBRL.format(r.prolabore)}</td>
