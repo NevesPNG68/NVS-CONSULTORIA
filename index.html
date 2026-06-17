@@ -540,17 +540,17 @@ tr.finalRow td{background:rgba(57,255,20,.07);font-weight:950;border-top:1px sol
 
   <section class="panel">
     <div class="panelHeader">
-      <div><h2>Fluxo de caixa detalhado</h2><div class="muted">Movimentações consolidadas por data, com origem, grupo, status e saldo acumulado.</div></div>
+      <div><h2>Fluxo de caixa detalhado</h2><div class="muted">Movimentações consolidadas por competência, vencimento, origem, grupo, status e saldo acumulado.</div></div>
       <div class="muted" id="tableCount">0 registros</div>
     </div>
     <div class="tableWrap">
       <table>
         <thead>
           <tr>
-            <th>Data</th><th>Tipo</th><th>Descrição</th><th>Grupo</th><th>Entidade/NF</th><th>Status</th><th>Entrada</th><th>Saída</th><th>Saldo diário</th><th>Saldo acumulado</th>
+            <th>Competência</th><th>Vencto</th><th>Tipo</th><th>Descrição</th><th>Grupo</th><th>Entidade/NF</th><th>Status</th><th>Entrada</th><th>Saída</th><th>Saldo diário</th><th>Saldo acumulado</th>
           </tr>
         </thead>
-        <tbody id="cashTable"><tr><td colspan="10" class="empty">Carregando dados...</td></tr></tbody>
+        <tbody id="cashTable"><tr><td colspan="11" class="empty">Carregando dados...</td></tr></tbody>
       </table>
     </div>
   </section>
@@ -639,7 +639,7 @@ async function loadFromUrl(){
     setStatus('Base carregada automaticamente: DRE_NVS.xlsx');
   }catch(e){
     setStatus('Não consegui carregar DRE_NVS.xlsx automaticamente. Confira se a planilha está no mesmo diretório do index.html no GitHub.');
-    document.getElementById('cashTable').innerHTML = '<tr><td colspan="10" class="empty">Planilha não localizada no GitHub.</td></tr>';
+    document.getElementById('cashTable').innerHTML = '<tr><td colspan="11" class="empty">Planilha não localizada no GitHub.</td></tr>';
   }
 }
 function setStatus(detail){
@@ -702,7 +702,8 @@ function parseReceitas(rows){
       imposto,
       origem:'Receitas',
       nf,
-      competenciaDate:data
+      competenciaDate:data,
+      vencimentoDate:null
     });
   }
   return out;
@@ -720,6 +721,8 @@ function parseDespesas(rows){
   const cPagar = col(map,['Valor a Pagar']);
   const cForma = col(map,['Forma de pgto','Forma de pagamento']);
   const cDataPagar = col(map,['Data a pagar']);
+  // Vencimento solicitado: coluna N da aba Despesas (14ª coluna / índice 13).
+  const cVencto = 13;
   const cStatus = col(map,['Status Pgto','Status']);
   const out=[];
   for(let i=idx+1;i<rows.length;i++){
@@ -733,6 +736,7 @@ function parseDespesas(rows){
     const valorSaida = status === 'PAGO' ? (total || pagar) : (pagar || total);
     const dataCompetencia = excelDateToJS(val(row,cData));
     const dataPagamento = excelDateToJS(val(row,cDataPagar));
+    const vencimentoDate = excelDateToJS(val(row,cVencto));
     const data = dataPagamento || dataCompetencia;
     if(!data || !valorSaida) continue;
     out.push({
@@ -750,6 +754,7 @@ function parseDespesas(rows){
       origem:'Despesas',
       competenciaDate:dataCompetencia || data,
       pagamentoDate:dataPagamento || null,
+      vencimentoDate:vencimentoDate || null,
       valorTotal:total || valorSaida,
       valorPagar:pagar
     });
@@ -901,16 +906,17 @@ function setText(id,v){const el=document.getElementById(id); if(el) el.textConte
 function renderTable(rows, saldoAnterior){
   const tb = document.getElementById('cashTable');
   let acum = saldoAnterior;
-  const openingRow = `<tr class="balanceRow"><td colspan="9">Saldo anterior ao período</td><td class="num" style="color:${acum>=0?'var(--lime)':'var(--red)'}">${fmtBRL.format(acum)}</td></tr>`;
+  const openingRow = `<tr class="balanceRow"><td colspan="10">Saldo anterior ao período</td><td class="num" style="color:${acum>=0?'var(--lime)':'var(--red)'}">${fmtBRL.format(acum)}</td></tr>`;
   if(!rows.length){
-    tb.innerHTML = openingRow + `<tr><td colspan="9" class="empty">Nenhuma movimentação encontrada para o filtro selecionado.</td><td class="num">${fmtBRL.format(acum)}</td></tr>` + `<tr class="finalRow"><td colspan="9">Saldo final do período</td><td class="num" style="color:${acum>=0?'var(--lime)':'var(--red)'}">${fmtBRL.format(acum)}</td></tr>`;
+    tb.innerHTML = openingRow + `<tr><td colspan="10" class="empty">Nenhuma movimentação encontrada para o filtro selecionado.</td><td class="num">${fmtBRL.format(acum)}</td></tr>` + `<tr class="finalRow"><td colspan="10">Saldo final do período</td><td class="num" style="color:${acum>=0?'var(--lime)':'var(--red)'}">${fmtBRL.format(acum)}</td></tr>`;
     return;
   }
   const body = rows.map(r=>{
     const mov = r.entrada - r.saida; acum += mov;
     const rowClass = r.status === 'PAGO' ? ' class="rowPaid"' : '';
     return `<tr${rowClass}>
-      <td>${fmtDate.format(r.data)}</td>
+      <td>${monthLabelBR(r.competenciaDate || r.data)}</td>
+      <td>${r.vencimentoDate ? fmtDate.format(r.vencimentoDate) : '-'}</td>
       <td><span class="pill ${r.tipo==='entrada'?'in':'out'}">${r.tipo==='entrada'?'Entrada':'Saída'}</span></td>
       <td>${escapeHTML(r.descricao)}</td>
       <td>${escapeHTML(r.grupo)}</td>
@@ -922,7 +928,7 @@ function renderTable(rows, saldoAnterior){
       <td class="num" style="color:${acum>=0?'var(--lime)':'var(--red)'}">${fmtBRL.format(acum)}</td>
     </tr>`;
   }).join('');
-  tb.innerHTML = openingRow + body + `<tr class="finalRow"><td colspan="9">Saldo final do período</td><td class="num" style="color:${acum>=0?'var(--lime)':'var(--red)'}">${fmtBRL.format(acum)}</td></tr>`;
+  tb.innerHTML = openingRow + body + `<tr class="finalRow"><td colspan="10">Saldo final do período</td><td class="num" style="color:${acum>=0?'var(--lime)':'var(--red)'}">${fmtBRL.format(acum)}</td></tr>`;
 }
 function renderChart(rows, saldoAnterior=0){
   const byDate = new Map();
@@ -1091,14 +1097,14 @@ function resetFilters(){
 function exportCSV(){
   const rows = rowsInPeriod(true);
   const saldoAnterior = balanceBeforePeriod();
-  const header = ['Data','Tipo','Descrição','Grupo','Entidade/NF','Status','Entrada','Saída'];
-  const lines = [['Saldo anterior ao período','','','','','','',saldoAnterior.toFixed(2).replace('.',',')].map(x=>'"'+String(x??'').replace(/"/g,'""')+'"').join(';')];
+  const header = ['Competência','Vencto','Tipo','Descrição','Grupo','Entidade/NF','Status','Entrada','Saída'];
+  const lines = [['Saldo anterior ao período','','','','','','','',saldoAnterior.toFixed(2).replace('.',',')].map(x=>'"'+String(x??'').replace(/"/g,'""')+'"').join(';')];
   lines.unshift(header.join(';'));
   lines.push(...rows.map(r=>[
-    fmtDate.format(r.data), r.tipo, r.descricao, r.grupo, r.entidade, r.status, r.entrada.toFixed(2).replace('.',','), r.saida.toFixed(2).replace('.',',')
+    monthLabelBR(r.competenciaDate || r.data), r.vencimentoDate ? fmtDate.format(r.vencimentoDate) : '-', r.tipo, r.descricao, r.grupo, r.entidade, r.status, r.entrada.toFixed(2).replace('.',','), r.saida.toFixed(2).replace('.',',')
   ].map(x=>'"'+String(x??'').replace(/"/g,'""')+'"').join(';')));
   const saldoFinal = saldoAnterior + rows.reduce((s,r)=>s+r.entrada-r.saida,0);
-  lines.push(['Saldo final do período','','','','','','',saldoFinal.toFixed(2).replace('.',',')].map(x=>'"'+String(x??'').replace(/"/g,'""')+'"').join(';'));
+  lines.push(['Saldo final do período','','','','','','','',saldoFinal.toFixed(2).replace('.',',')].map(x=>'"'+String(x??'').replace(/"/g,'""')+'"').join(';'));
   const blob = new Blob([lines.join('\n')], {type:'text/csv;charset=utf-8'});
   const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'fluxo_caixa_nvs.csv'; a.click(); URL.revokeObjectURL(a.href);
 }
