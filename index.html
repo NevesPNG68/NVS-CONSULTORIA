@@ -392,6 +392,59 @@ tr.finalRow td{background:rgba(57,255,20,.07);font-weight:950;border-top:1px sol
   box-shadow:0 0 14px rgba(0,229,255,.18);
 }
 
+
+/* ============================================================
+   CONTROLE DE LUCRO A DISTRIBUIR
+   Lê Receitas/Despesas e abate D.L. somente quando lançado como PAGO.
+   ============================================================ */
+.profitControlPanel{--edge-rgb:57,255,20;}
+.profitSummaryGrid{
+  display:grid;
+  grid-template-columns:repeat(4,minmax(150px,1fr));
+  gap:12px;
+  margin-bottom:14px;
+}
+.profitSummaryGrid .mini:nth-child(1){--edge-rgb:0,229,255;}
+.profitSummaryGrid .mini:nth-child(2){--edge-rgb:57,255,20;}
+.profitSummaryGrid .mini:nth-child(3){--edge-rgb:245,158,11;}
+.profitSummaryGrid .mini:nth-child(4){--edge-rgb:168,85,247;}
+#profitControlTable tr td{transition:background .18s ease, color .18s ease, box-shadow .18s ease;}
+#profitControlTable tr.profitPositive td:first-child{box-shadow:inset 5px 0 0 rgba(57,255,20,.92);}
+#profitControlTable tr.profitNegative td:first-child{box-shadow:inset 5px 0 0 rgba(251,54,93,.92);}
+#profitControlTable tr:hover td,
+#profitControlTable tr.touch-row td{
+  background:linear-gradient(90deg, rgba(57,255,20,.18), rgba(0,229,255,.12))!important;
+  color:#FFFFFF;
+}
+.dlCheck{
+  display:inline-flex;
+  align-items:center;
+  gap:7px;
+  color:#BBF7D0;
+  background:rgba(34,197,94,.12);
+  border:1px solid rgba(34,197,94,.32);
+  padding:6px 9px;
+  border-radius:999px;
+  font-weight:950;
+}
+.dlPending{
+  margin-top:5px;
+  color:#FED7AA;
+  font-size:11px;
+  font-weight:900;
+}
+.profitNote{
+  margin-top:12px;
+  color:#CBD5E1;
+  font-size:13px;
+  border:1px dashed rgba(57,255,20,.35);
+  padding:12px;
+  border-radius:16px;
+  background:rgba(57,255,20,.035);
+}
+@media(max-width:980px){.profitSummaryGrid{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:560px){.profitSummaryGrid{grid-template-columns:1fr}#profitControlTable{min-width:980px}}
+
 </style>
 </head>
 <body>
@@ -452,6 +505,36 @@ tr.finalRow td{background:rgba(57,255,20,.07);font-weight:950;border-top:1px sol
         <div class="mini"><div class="k">Valor a pagar</div><div class="v" id="miniPagar">R$ 0,00</div></div>
       </div>
     </div>
+  </section>
+
+
+  <section class="panel profitControlPanel" id="profitControlPanel">
+    <div class="panelHeader">
+      <div>
+        <h2>Controle de lucro a distribuir</h2>
+        <div class="muted">Faturamento menos INSS, pró-labore, DAS, demais gastos e D.L. pago. O D.L. só abate o saldo quando estiver lançado como pago na aba Despesas.</div>
+      </div>
+      <div class="muted" id="profitControlCount">0 competências</div>
+    </div>
+
+    <div class="profitSummaryGrid">
+      <div class="mini"><div class="k">Lucro gerado antes da D.L.</div><div class="v" id="profitGenerated">R$ 0,00</div></div>
+      <div class="mini"><div class="k">D.L. pago</div><div class="v" id="profitPaid">R$ 0,00</div></div>
+      <div class="mini"><div class="k">Saldo a distribuir</div><div class="v" id="profitAvailable">R$ 0,00</div></div>
+      <div class="mini"><div class="k">Competências positivas</div><div class="v" id="profitPositiveMonths">0</div></div>
+    </div>
+
+    <div class="tableWrap">
+      <table id="profitControlTableWrap">
+        <thead>
+          <tr>
+            <th>Competência</th><th>Faturamento</th><th>INSS</th><th>Pró-labore</th><th>DAS</th><th>D.L. pago</th><th>Demais gastos</th><th>Saldo a distribuir</th>
+          </tr>
+        </thead>
+        <tbody id="profitControlTable"><tr><td colspan="8" class="empty">Carregando controle...</td></tr></tbody>
+      </table>
+    </div>
+    <div class="profitNote">Para abater do saldo, lance na aba Despesas como <b>Lucros Distribuídos</b> ou grupo <b>DL</b> e deixe como <b>PAGO</b>. Se estiver a pagar, o HTML mostra como pendente, mas não reduz o saldo a distribuir.</div>
   </section>
 
   <section class="panel">
@@ -614,7 +697,8 @@ function parseReceitas(rows){
       bruto,
       imposto,
       origem:'Receitas',
-      nf
+      nf,
+      competenciaDate:data
     });
   }
   return out;
@@ -643,7 +727,9 @@ function parseDespesas(rows){
     if(!desc && !item && !total && !pagar) continue;
     const status = normalize(val(row,cStatus)).includes('PAGO') ? 'PAGO' : (pagar > 0 ? 'A PAGAR' : 'PAGO');
     const valorSaida = status === 'PAGO' ? (total || pagar) : (pagar || total);
-    const data = excelDateToJS(val(row,cDataPagar)) || excelDateToJS(val(row,cData));
+    const dataCompetencia = excelDateToJS(val(row,cData));
+    const dataPagamento = excelDateToJS(val(row,cDataPagar));
+    const data = dataPagamento || dataCompetencia;
     if(!data || !valorSaida) continue;
     out.push({
       data,
@@ -657,7 +743,11 @@ function parseDespesas(rows){
       bruto:0,
       imposto:0,
       forma:String(val(row,cForma)??'').trim(),
-      origem:'Despesas'
+      origem:'Despesas',
+      competenciaDate:dataCompetencia || data,
+      pagamentoDate:dataPagamento || null,
+      valorTotal:total || valorSaida,
+      valorPagar:pagar
     });
   }
   return out;
@@ -741,6 +831,7 @@ function render(){
   document.getElementById('tableCount').textContent = rows.length + (rows.length === 1 ? ' registro' : ' registros');
   renderTable(rows, saldoAnterior);
   renderChart(periodAllRows, saldoAnterior);
+  renderProfitControl();
   renderInsight(periodAllRows, entrada, saida, saldoPeriodo, pagar, pago, saldoAnterior, saldoFinal);
 }
 function setText(id,v){const el=document.getElementById(id); if(el) el.textContent=v;}
@@ -796,6 +887,112 @@ function renderChart(rows, saldoAnterior=0){
     {label:'Saldo acumulado',data:saldoAcumulado,type:'line',tension:.35,borderWidth:3,pointRadius:3,borderColor:'rgba(0,229,255,.95)',backgroundColor:'rgba(0,229,255,.12)'}
   ]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{labels:{color:'#CBD5E1'}},tooltip:{callbacks:{label:(c)=>`${c.dataset.label}: ${fmtBRL.format(c.raw)}`}}},scales:{x:{ticks:{color:'#94A3B8',maxRotation:0,autoSkip:true},grid:{color:'rgba(148,163,184,.10)'}},y:{ticks:{color:'#94A3B8',callback:v=>fmtBRL.format(v)},grid:{color:'rgba(148,163,184,.12)'}}}}});
 }
+
+function addMonthsUTC(d, n){return new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth()+n, 1));}
+function monthStartUTC(d){return new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), 1));}
+function sameMonthUTC(d, monthStart){return d && d.getUTCFullYear() === monthStart.getUTCFullYear() && d.getUTCMonth() === monthStart.getUTCMonth();}
+function monthLabelBR(d){
+  const abbr = ['JAN','FEV','MAR','ABR','MAI','JUN','JUL','AGO','SET','OUT','NOV','DEZ'];
+  return `${abbr[d.getUTCMonth()]}/${String(d.getUTCFullYear()).slice(-2)}`;
+}
+function rowSearchText(r){return normalize([r.descricao,r.grupo,r.entidade,r.forma].join(' '));}
+function rowSearchCompact(r){return rowSearchText(r).replace(/[^A-Z0-9]/g,'');}
+function expenseValue(r){return r.saida || r.valorTotal || 0;}
+function isInssExpense(r){return rowSearchText(r).includes('INSS');}
+function isProlaboreExpense(r){return rowSearchCompact(r).includes('PROLABORE');}
+function isDasExpense(r){return /(^|[^A-Z0-9])DAS([^A-Z0-9]|$)/.test(rowSearchText(r));}
+function isDLExpense(r){
+  const txt = rowSearchText(r);
+  const cmp = rowSearchCompact(r);
+  const grp = normalize(r.grupo);
+  return txt.includes('LUCRO') || cmp.includes('LUCROSDISTRIBUIDOS') || cmp.includes('DISTRIBUICAODELUCRO') || grp === 'DL' || grp === 'D.L.' || grp === 'D L';
+}
+function isPaidExpense(r){return r.status === 'PAGO';}
+function getControlMonths(){
+  let {start, end} = getPeriod();
+  if(start && end && start > end){ const tmp=start; start=end; end=tmp; }
+  let s = start ? jsDateFromKey(start) : (baseMinDate ? jsDateFromKey(baseMinDate) : null);
+  let e = end ? jsDateFromKey(end) : (baseMaxDate ? jsDateFromKey(baseMaxDate) : s);
+  if(!s || !e) return [];
+  s = monthStartUTC(s);
+  e = monthStartUTC(e);
+  const months = [];
+  for(let d=s, guard=0; d<=e && guard<120; d=addMonthsUTC(d,1), guard++) months.push(d);
+  return months;
+}
+function buildProfitControlRows(){
+  const months = getControlMonths();
+  return months.map(month=>{
+    const receitasMes = allRows.filter(r=>r.tipo==='entrada' && sameMonthUTC(r.competenciaDate || r.data, month));
+    const faturamentoPrincipal = receitasMes.filter(r=>rowSearchText(r).includes('FATURAMENTO')).reduce((s,r)=>s+r.entrada,0);
+    const faturamento = faturamentoPrincipal || receitasMes.reduce((s,r)=>s+r.entrada,0);
+
+    const despesasMes = allRows.filter(r=>r.tipo==='saida' && sameMonthUTC(r.competenciaDate || r.data, month));
+    const inss = despesasMes.filter(isInssExpense).reduce((s,r)=>s+expenseValue(r),0);
+    const prolabore = despesasMes.filter(isProlaboreExpense).reduce((s,r)=>s+expenseValue(r),0);
+    const das = despesasMes.filter(isDasExpense).reduce((s,r)=>s+expenseValue(r),0);
+    const dlRows = despesasMes.filter(isDLExpense);
+    const dlPago = dlRows.filter(isPaidExpense).reduce((s,r)=>s+expenseValue(r),0);
+    const dlPendente = dlRows.filter(r=>!isPaidExpense(r)).reduce((s,r)=>s+expenseValue(r),0);
+    const demais = despesasMes
+      .filter(r=>!isInssExpense(r) && !isProlaboreExpense(r) && !isDasExpense(r) && !isDLExpense(r))
+      .reduce((s,r)=>s+expenseValue(r),0);
+    const lucroAntesDL = faturamento - inss - prolabore - das - demais;
+    const saldo = lucroAntesDL - dlPago;
+    const movimento = faturamento || inss || prolabore || das || dlPago || dlPendente || demais;
+    return {month, competencia:monthLabelBR(month), faturamento, inss, prolabore, das, dlPago, dlPendente, demais, lucroAntesDL, saldo, movimento};
+  });
+}
+function renderProfitControl(){
+  const tb = document.getElementById('profitControlTable');
+  if(!tb) return;
+  const rows = buildProfitControlRows().filter(r=>r.movimento);
+  const totalLucroAntesDL = rows.reduce((s,r)=>s+r.lucroAntesDL,0);
+  const totalDLPago = rows.reduce((s,r)=>s+r.dlPago,0);
+  const totalSaldo = rows.reduce((s,r)=>s+r.saldo,0);
+  const positivos = rows.filter(r=>r.saldo > 0).length;
+
+  setText('profitGenerated', fmtBRL.format(totalLucroAntesDL));
+  setText('profitPaid', fmtBRL.format(totalDLPago));
+  setText('profitAvailable', fmtBRL.format(totalSaldo));
+  setText('profitPositiveMonths', String(positivos));
+  setText('profitControlCount', rows.length + (rows.length === 1 ? ' competência' : ' competências'));
+  const availableEl = document.getElementById('profitAvailable');
+  if(availableEl) availableEl.style.color = totalSaldo >= 0 ? 'var(--lime)' : 'var(--red)';
+  const paidEl = document.getElementById('profitPaid');
+  if(paidEl) paidEl.style.color = totalDLPago > 0 ? 'var(--lime)' : 'var(--muted)';
+
+  if(!rows.length){
+    tb.innerHTML = '<tr><td colspan="8" class="empty">Nenhuma competência encontrada para o período selecionado.</td></tr>';
+    return;
+  }
+  tb.innerHTML = rows.map(r=>{
+    const cls = r.saldo >= 0 ? 'profitPositive' : 'profitNegative';
+    const dlHtml = r.dlPago > 0
+      ? `<span class="dlCheck">✓ ${fmtBRL.format(r.dlPago)}</span>${r.dlPendente>0?`<div class="dlPending">A pagar: ${fmtBRL.format(r.dlPendente)}</div>`:''}`
+      : (r.dlPendente > 0 ? `<span class="pill warn">A pagar</span><div class="dlPending">${fmtBRL.format(r.dlPendente)} não abatido</div>` : '-');
+    return `<tr class="${cls}">
+      <td><b>${r.competencia}</b></td>
+      <td class="num">${fmtBRL.format(r.faturamento)}</td>
+      <td class="num">${fmtBRL.format(r.inss)}</td>
+      <td class="num">${fmtBRL.format(r.prolabore)}</td>
+      <td class="num">${fmtBRL.format(r.das)}</td>
+      <td class="num">${dlHtml}</td>
+      <td class="num">${fmtBRL.format(r.demais)}</td>
+      <td class="num" style="color:${r.saldo>=0?'var(--lime)':'var(--red)'}">${fmtBRL.format(r.saldo)}</td>
+    </tr>`;
+  }).join('') + `<tr class="finalRow">
+    <td><b>TOTAL</b></td>
+    <td class="num">${fmtBRL.format(rows.reduce((s,r)=>s+r.faturamento,0))}</td>
+    <td class="num">${fmtBRL.format(rows.reduce((s,r)=>s+r.inss,0))}</td>
+    <td class="num">${fmtBRL.format(rows.reduce((s,r)=>s+r.prolabore,0))}</td>
+    <td class="num">${fmtBRL.format(rows.reduce((s,r)=>s+r.das,0))}</td>
+    <td class="num">${fmtBRL.format(totalDLPago)}</td>
+    <td class="num">${fmtBRL.format(rows.reduce((s,r)=>s+r.demais,0))}</td>
+    <td class="num" style="color:${totalSaldo>=0?'var(--lime)':'var(--red)'}">${fmtBRL.format(totalSaldo)}</td>
+  </tr>`;
+}
+
 function renderInsight(rows, entrada, saida, saldo, pagar, pago, saldoAnterior, saldoFinal){
   const days = new Set(rows.map(r=>dateKey(r.data))).size || 1;
   const avgIn = entrada/days, avgOut = saida/days;
@@ -856,23 +1053,27 @@ function escapeHTML(s){return String(s??'').replace(/[&<>'"]/g,c=>({'&':'&amp;',
 
 // Realce das linhas da tabela também em telas de toque.
 (function(){
-  const tb = document.getElementById('cashTable');
-  if(!tb) return;
+  const tables = ['cashTable','profitControlTable'].map(id=>document.getElementById(id)).filter(Boolean);
+  if(!tables.length) return;
   function clearRows(){
-    tb.querySelectorAll('tr.touch-row').forEach(function(row){ row.classList.remove('touch-row'); });
+    tables.forEach(function(tb){
+      tb.querySelectorAll('tr.touch-row').forEach(function(row){ row.classList.remove('touch-row'); });
+    });
   }
-  tb.addEventListener('pointerdown', function(e){
-    const row = e.target.closest('tr');
-    if(!row) return;
-    clearRows();
-    row.classList.add('touch-row');
-  }, {passive:true});
-  tb.addEventListener('pointerup', function(e){
-    const row = e.target.closest('tr');
-    if(row) setTimeout(function(){ row.classList.remove('touch-row'); }, 700);
-  }, {passive:true});
-  tb.addEventListener('pointercancel', clearRows, {passive:true});
-  tb.addEventListener('mouseleave', clearRows, {passive:true});
+  tables.forEach(function(tb){
+    tb.addEventListener('pointerdown', function(e){
+      const row = e.target.closest('tr');
+      if(!row) return;
+      clearRows();
+      row.classList.add('touch-row');
+    }, {passive:true});
+    tb.addEventListener('pointerup', function(e){
+      const row = e.target.closest('tr');
+      if(row) setTimeout(function(){ row.classList.remove('touch-row'); }, 700);
+    }, {passive:true});
+    tb.addEventListener('pointercancel', clearRows, {passive:true});
+    tb.addEventListener('mouseleave', clearRows, {passive:true});
+  });
 })();
 
 loadFromUrl();
