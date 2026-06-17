@@ -512,7 +512,7 @@ tr.finalRow td{background:rgba(57,255,20,.07);font-weight:950;border-top:1px sol
     <div class="panelHeader">
       <div>
         <h2>Controle de lucro a distribuir</h2>
-        <div class="muted">Faturamento menos INSS, pró-labore, DAS, demais gastos e D.L. pago. O saldo mensal é acumulado competência a competência, como na aba Controle de Lucro. O D.L. só abate quando estiver lançado como pago na aba Despesas.</div>
+        <div class="muted">Demonstrativo mensal conforme a aba Controle de Lucro: o saldo de cada competência compõe o acumulado mês a mês. O D.L. permanece abatendo somente quando estiver lançado como pago na aba Despesas.</div>
       </div>
       <div class="muted" id="profitControlCount">0 competências</div>
     </div>
@@ -558,6 +558,7 @@ tr.finalRow td{background:rgba(57,255,20,.07);font-weight:950;border-top:1px sol
 <script>
 const EXCEL_URL = './DRE_NVS.xlsx';
 let allRows = [];
+let controlLucroRows = [];
 let chart = null;
 let baseMinDate = '';
 let baseMaxDate = '';
@@ -653,12 +654,14 @@ function setStatus(detail){
 function processWorkbook(workbook){
   const recSheet = findSheet(workbook, ['Receitas','Receita']);
   const despSheet = findSheet(workbook, ['Despesas','Despesa']);
+  const controlSheet = findSheet(workbook, ['Controle Distr. Lucro','Controle Distr','Controle de Lucro','Lucro']);
   if(!recSheet || !despSheet){
     setStatus('Erro: não localizei as abas de Receita e Despesa na planilha.');
     return;
   }
   const receitas = parseReceitas(sheetRows(workbook, recSheet));
   const despesas = parseDespesas(sheetRows(workbook, despSheet));
+  controlLucroRows = controlSheet ? parseControleLucro(sheetRows(workbook, controlSheet)) : [];
   allRows = [...receitas, ...despesas].filter(r => r.data && (r.entrada || r.saida));
   allRows.sort((a,b)=> a.data - b.data || (a.tipo==='entrada'?-1:1));
   buildDateFilters();
@@ -752,6 +755,65 @@ function parseDespesas(rows){
   }
   return out;
 }
+
+function firstExistingCol(map, names){
+  for(const n of names){
+    const k = normalize(n);
+    if(map[k] !== undefined) return map[k];
+  }
+  return -1;
+}
+function parseControleLucro(rows){
+  const idx = findHeaderIndex(rows, ['Competência','Acumulado']);
+  if(idx < 0) return [];
+  const map = headerMap(rows[idx]);
+  const cComp = firstExistingCol(map, ['Competência','Competencia']);
+  const cFat = firstExistingCol(map, ['Faturamento']);
+  const cInss = firstExistingCol(map, ['INSS']);
+  const cPro = firstExistingCol(map, ['Pró-labore','Pro-labore','Prolabore','Pró labore']);
+  const cDas = firstExistingCol(map, ['DAS']);
+  const cDL = firstExistingCol(map, ['DL Pagos','D.L. Pago','DL Pago','Lucros Distribuídos','Lucros Distribuidos']);
+  const cDemais = firstExistingCol(map, ['Demais gastos','Demais Gastos']);
+  const cSaldo = firstExistingCol(map, ['Saldo']);
+  const cAcum = firstExistingCol(map, ['Acumulado']);
+  const cBase = firstExistingCol(map, ['Data base','Data Base']);
+  const out = [];
+  for(let i=idx+1; i<rows.length; i++){
+    const row = rows[i];
+    const competencia = String(val(row,cComp) ?? '').trim();
+    const faturamento = toNumber(val(row,cFat));
+    const inss = toNumber(val(row,cInss));
+    const prolabore = toNumber(val(row,cPro));
+    const das = toNumber(val(row,cDas));
+    const dlPago = toNumber(val(row,cDL));
+    const demais = toNumber(val(row,cDemais));
+    const saldo = toNumber(val(row,cSaldo));
+    const acumulado = toNumber(val(row,cAcum));
+    const base = excelDateToJS(val(row,cBase));
+    const temValor = faturamento || inss || prolabore || das || dlPago || demais || saldo || acumulado;
+    if(!competencia && !temValor) continue;
+    if(!competencia) continue;
+    if(normalize(competencia).includes('TOTAL')) continue;
+    out.push({
+      competencia,
+      faturamento,
+      inss,
+      prolabore,
+      das,
+      dlPago,
+      dlPendente: 0,
+      demais,
+      lucroAntesDL: faturamento - inss - prolabore - das - demais,
+      saldo,
+      acumulado,
+      month: base,
+      movimento: true,
+      origemControle: true
+    });
+  }
+  return out;
+}
+
 function buildDateFilters(){
   if(!allRows.length) return;
   baseMinDate = dateKey(allRows[0].data);
@@ -909,18 +971,25 @@ function isDLExpense(r){
 }
 function isPaidExpense(r){return r.status === 'PAGO';}
 function getControlMonths(){
-  let {start, end} = getPeriod();
-  if(start && end && start > end){ const tmp=start; start=end; end=tmp; }
-  let s = start ? jsDateFromKey(start) : (baseMinDate ? jsDateFromKey(baseMinDate) : null);
-  let e = end ? jsDateFromKey(end) : (baseMaxDate ? jsDateFromKey(baseMaxDate) : s);
-  if(!s || !e) return [];
-  s = monthStartUTC(s);
-  e = monthStartUTC(e);
+  // O controle de lucro não acompanha o filtro mensal do fluxo de caixa.
+  // Ele deve mostrar a sequência de competências como na aba Controle Distr. Lucro,
+  // carregando o saldo acumulado mês a mês.
+  let s = null;
+  const competenciaDates = allRows
+    .map(r => r.competenciaDate || r.data)
+    .filter(Boolean)
+    .sort((a,b)=>a-b);
+  if(competenciaDates.length) s = monthStartUTC(competenciaDates[0]);
+  else if(baseMinDate) s = monthStartUTC(jsDateFromKey(baseMinDate));
+  if(!s) return [];
   const months = [];
-  for(let d=s, guard=0; d<=e && guard<120; d=addMonthsUTC(d,1), guard++) months.push(d);
+  for(let d=s, guard=0; guard<24; d=addMonthsUTC(d,1), guard++) months.push(d);
   return months;
 }
 function buildProfitControlRows(){
+  if(controlLucroRows && controlLucroRows.length){
+    return controlLucroRows;
+  }
   const months = getControlMonths();
   let acumulado = 0;
   return months.map(month=>{
